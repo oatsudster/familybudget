@@ -4,7 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>รายรับ-รายจ่าย</title>
-<link rel="icon" href="data:,">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1A5E38">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="รายรับ-รายจ่าย">
 <style>
   :root{
     --income:#1A7A4C;
@@ -144,6 +150,12 @@
   .txItem .amt.expense{color:var(--expense);}
   #emptyState{text-align:center;color:var(--muted);padding:40px 20px;}
 
+  #exportRow{text-align:center;margin:24px 16px 8px;}
+  #exportBtn{
+    background:none;border:none;color:var(--muted);font-size:15px;
+    text-decoration:underline;cursor:pointer;padding:10px;
+  }
+
   /* ---------- Modal ---------- */
   .overlay{
     position:fixed;inset:0;background:rgba(0,0,0,0.45);
@@ -188,6 +200,13 @@
   #deleteBtn{background:var(--surface);color:var(--expense);border:2px solid var(--expense);border-radius:14px;padding:16px;font-weight:700;font-size:17px;cursor:pointer;}
   #saveBtn{background:var(--income);color:#fff;border:none;border-radius:14px;padding:16px;font-weight:700;font-size:17px;cursor:pointer;}
   #cancelBtn{background:var(--surface);color:var(--muted);border:2px solid var(--border);border-radius:14px;padding:16px;font-weight:700;font-size:17px;cursor:pointer;}
+
+  .confirmSheet{text-align:center;border-radius:22px;max-width:420px;}
+  .confirmIcon{font-size:44px;margin-bottom:8px;}
+  .confirmSheet h2{font-size:20px;margin-bottom:8px;}
+  .confirmDetail{color:var(--muted);font-size:16px;margin-bottom:4px;}
+  #confirmCancelBtn{background:var(--surface);color:var(--muted);border:2px solid var(--border);border-radius:14px;padding:16px;font-weight:700;font-size:17px;cursor:pointer;}
+  #confirmDeleteBtn{background:var(--expense);color:#fff;border:none;border-radius:14px;padding:16px;font-weight:700;font-size:17px;cursor:pointer;}
 
   #syncBadge{
     display:inline-flex;align-items:center;gap:6px;
@@ -242,6 +261,10 @@
 
   <div id="txList"></div>
   <div id="emptyState" class="hidden">ยังไม่มีรายการในเดือนนี้</div>
+
+  <div id="exportRow">
+    <button id="exportBtn">📄 ส่งออกข้อมูลทั้งหมด (CSV)</button>
+  </div>
 </div>
 
 <!-- Add/Edit sheet -->
@@ -272,6 +295,19 @@
       <button id="cancelBtn">ยกเลิก</button>
       <button id="deleteBtn" class="hidden">ลบ</button>
       <button id="saveBtn">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirmation -->
+<div class="overlay hidden" id="confirmOverlay">
+  <div class="sheet confirmSheet">
+    <div class="confirmIcon">🗑️</div>
+    <h2>ลบรายการนี้หรือไม่?</h2>
+    <p class="confirmDetail" id="confirmDetail"></p>
+    <div class="sheetActions">
+      <button id="confirmCancelBtn">ยกเลิก</button>
+      <button id="confirmDeleteBtn">ลบรายการ</button>
     </div>
   </div>
 </div>
@@ -400,6 +436,7 @@ function boot() {
 let currentTx = []; // all transactions for household, live
 let viewMonth = new Date(); // month currently displayed
 let editingId = null;
+let editingTx = null;
 let selectedType = 'expense';
 let selectedCat = null;
 
@@ -539,6 +576,7 @@ document.getElementById('typeExpenseBtn').onclick = () => setType('expense');
 
 function openAdd(type) {
   editingId = null;
+  editingTx = null;
   document.getElementById('sheetTitle').textContent = 'เพิ่มรายการ';
   document.getElementById('deleteBtn').classList.add('hidden');
   document.getElementById('amountInput').value = '';
@@ -550,6 +588,7 @@ function openAdd(type) {
 
 function openEdit(t) {
   editingId = t.id;
+  editingTx = t;
   document.getElementById('sheetTitle').textContent = 'แก้ไขรายการ';
   document.getElementById('deleteBtn').classList.remove('hidden');
   document.getElementById('amountInput').value = t.amount;
@@ -598,16 +637,56 @@ document.getElementById('saveBtn').onclick = async () => {
   }
 };
 
-document.getElementById('deleteBtn').onclick = async () => {
+const confirmOverlay = document.getElementById('confirmOverlay');
+
+document.getElementById('deleteBtn').onclick = () => {
+  if (!editingId || !editingTx) return;
+  const info = catInfo(editingTx.type, editingTx.category);
+  document.getElementById('confirmDetail').textContent =
+    `${info.em} ${info.label} ${editingTx.type === 'income' ? '+' : '-'}${fmt(editingTx.amount)} บาท`;
+  confirmOverlay.classList.remove('hidden');
+};
+
+document.getElementById('confirmCancelBtn').onclick = () => confirmOverlay.classList.add('hidden');
+
+document.getElementById('confirmDeleteBtn').onclick = async () => {
   if (!editingId) return;
-  if (!confirm('ลบรายการนี้หรือไม่?')) return;
   try {
     await txCollection().doc(editingId).delete();
+    confirmOverlay.classList.add('hidden');
     overlay.classList.add('hidden');
   } catch (e) {
     alert('ลบไม่สำเร็จ ลองใหม่อีกครั้ง');
     console.error(e);
   }
+};
+
+// ---------------- CSV export ----------------
+document.getElementById('exportBtn').onclick = () => {
+  if (currentTx.length === 0) { alert('ยังไม่มีข้อมูลให้ส่งออก'); return; }
+  const rows = [['วันที่', 'ประเภท', 'หมวดหมู่', 'จำนวนเงิน', 'โน้ต']];
+  [...currentTx].sort((a, b) => a.date.localeCompare(b.date)).forEach(t => {
+    const info = catInfo(t.type, t.category);
+    rows.push([
+      t.date,
+      t.type === 'income' ? 'รายรับ' : 'รายจ่าย',
+      info.label,
+      t.amount,
+      t.note || ''
+    ]);
+  });
+  const csv = '﻿' + rows.map(r =>
+    r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+  ).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `รายรับรายจ่าย-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 };
 </script>
 </body>
