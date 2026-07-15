@@ -81,6 +81,7 @@
   }
 
   /* ---------- App shell ---------- */
+  #app{max-width:640px;margin:0 auto;}
   header{
     background:var(--income);
     color:#fff;
@@ -189,11 +190,11 @@
   #cancelBtn{background:var(--surface);color:var(--muted);border:2px solid var(--border);border-radius:14px;padding:16px;font-weight:700;font-size:17px;cursor:pointer;}
 
   #syncBadge{
-    position:fixed;top:10px;right:10px;background:#fff;border-radius:20px;
-    padding:6px 12px;font-size:13px;color:var(--muted);box-shadow:0 2px 6px rgba(0,0,0,0.1);
-    display:flex;align-items:center;gap:6px;
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,0.15);border-radius:20px;
+    padding:5px 12px;font-size:13px;color:#fff;margin-top:8px;
   }
-  #syncDot{width:9px;height:9px;border-radius:50%;background:#ccc;}
+  #syncDot{width:9px;height:9px;border-radius:50%;background:#ccc;flex:none;}
   #syncDot.ok{background:var(--income);}
   #syncDot.err{background:var(--expense);}
 
@@ -201,8 +202,6 @@
 </style>
 </head>
 <body>
-
-<div id="syncBadge"><span id="syncDot"></span><span id="syncText">กำลังเชื่อมต่อ...</span></div>
 
 <!-- First-time setup screen: shows the secret link that must be bookmarked on every device -->
 <div id="setupScreen" class="hidden">
@@ -218,6 +217,7 @@
 <div id="app" class="hidden">
   <header>
     <h1>💰 บัญชีรายรับ-รายจ่าย</h1>
+    <div id="syncBadge"><span id="syncDot"></span><span id="syncText">กำลังเชื่อมต่อ...</span></div>
   </header>
 
   <div id="balanceCard">
@@ -304,6 +304,7 @@ const CATEGORIES = {
     { id: 'salary', em: '💵', label: 'เงินเดือน' },
     { id: 'pension', em: '🏦', label: 'เงินบำนาญ' },
     { id: 'palm', em: '🌴', label: 'ค่าขายปาล์ม' },
+    { id: 'beer', em: '🍺', label: 'ค่าขายเบียร์' },
     { id: 'gift', em: '🎁', label: 'ลูกให้' },
     { id: 'other_in', em: '✨', label: 'อื่นๆ' },
   ],
