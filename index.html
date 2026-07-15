@@ -86,6 +86,23 @@
     min-height:56px;
   }
 
+  .joinBox{
+    margin-top:32px;
+    padding-top:24px;
+    border-top:1px solid var(--border);
+    width:100%;
+    max-width:480px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+  }
+  .joinLabel{color:var(--muted);font-size:14px;margin:0;}
+  #joinLinkInput{
+    width:100%;padding:14px;border-radius:12px;border:2px solid var(--border);
+    font-size:15px;font-family:inherit;
+  }
+
   /* ---------- App shell ---------- */
   #app{max-width:640px;margin:0 auto;}
   header{
@@ -230,6 +247,12 @@
   <div class="linkBox" id="shareLink"></div>
   <button class="bigBtn" id="copyLinkBtn">คัดลอกลิงก์</button>
   <button class="secondaryBtn" id="enterAppBtn">เข้าใช้งาน</button>
+
+  <div class="joinBox">
+    <p class="joinLabel">มีลิงก์ครอบครัวอยู่แล้ว (เช่น เปิดจากไอคอนหน้าจอหลักแล้วข้อมูลไม่ตรงกับเครื่องอื่น)? วางลิงก์ที่นี่แล้วกดเข้าร่วม</p>
+    <input type="text" id="joinLinkInput" placeholder="วางลิงก์ที่นี่">
+    <button class="secondaryBtn" id="joinLinkBtn">เข้าร่วมด้วยลิงก์นี้</button>
+  </div>
 </div>
 
 <!-- Main app -->
@@ -400,6 +423,20 @@ function showSetupScreen() {
   document.getElementById('enterAppBtn').onclick = () => {
     document.getElementById('setupScreen').classList.add('hidden');
     startApp();
+  };
+  document.getElementById('joinLinkBtn').onclick = () => {
+    const raw = document.getElementById('joinLinkInput').value.trim();
+    if (!raw) { alert('กรุณาวางลิงก์ครอบครัวก่อน'); return; }
+    let id = raw;
+    try {
+      const parsed = new URL(raw);
+      const hParam = parsed.searchParams.get('h');
+      if (hParam) id = hParam;
+    } catch (e) { /* not a full URL, treat raw text as the id itself */ }
+    const url = new URL(location.href);
+    url.search = '';
+    url.searchParams.set('h', id);
+    location.href = url.toString();
   };
 }
 
