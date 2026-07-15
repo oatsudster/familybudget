@@ -1,0 +1,21 @@
+rules_version = '2';
+
+// Security model: this app has no login screen for the parents — access is
+// controlled entirely by knowing the secret link (?h=<householdId>).
+// We still require Firebase Anonymous Auth (any signed-in client, no
+// credentials) so that fully unauthenticated bots can't hit the database.
+// Do NOT treat this as strong security: anyone who obtains the link can
+// read/write that household's data. Keep the link private (don't post it
+// publicly), which is enough for a family budget app with no sensitive
+// financial account numbers stored in it.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /households/{householdId} {
+      allow read, write: if request.auth != null;
+
+      match /transactions/{txId} {
+        allow read, write: if request.auth != null;
+      }
+    }
+  }
+}
