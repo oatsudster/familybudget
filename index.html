@@ -241,15 +241,7 @@
     width:100%;padding:14px;border-radius:12px;border:2px solid var(--border);
     font-size:20px;font-family:inherit;
   }
-  #amountInput{font-weight:800;text-align:center;font-size:32px;background:var(--bg);}
-
-  .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
-  .numpad button{
-    background:var(--surface);border:2px solid var(--border);border-radius:12px;
-    font-size:24px;font-weight:700;padding:16px 0;cursor:pointer;color:var(--text);
-    min-height:56px;
-  }
-  .numpad button:active{background:var(--bg);}
+  #amountInput{font-weight:800;text-align:center;font-size:32px;}
 
   .catGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
   .catBtn{
@@ -365,21 +357,7 @@
     </div>
     <div class="field">
       <label>จำนวนเงิน (บาท)</label>
-      <input type="text" inputmode="none" id="amountInput" placeholder="0" readonly>
-      <div class="numpad" id="numpad">
-        <button type="button" data-key="1">1</button>
-        <button type="button" data-key="2">2</button>
-        <button type="button" data-key="3">3</button>
-        <button type="button" data-key="4">4</button>
-        <button type="button" data-key="5">5</button>
-        <button type="button" data-key="6">6</button>
-        <button type="button" data-key="7">7</button>
-        <button type="button" data-key="8">8</button>
-        <button type="button" data-key="9">9</button>
-        <button type="button" data-key=".">.</button>
-        <button type="button" data-key="0">0</button>
-        <button type="button" data-key="back">⌫</button>
-      </div>
+      <input type="number" inputmode="decimal" id="amountInput" placeholder="0" min="0" step="0.01">
     </div>
     <div class="field">
       <label>หมวดหมู่</label>
@@ -771,20 +749,6 @@ function setType(type) {
 
 document.getElementById('typeIncomeBtn').onclick = () => setType('income');
 document.getElementById('typeExpenseBtn').onclick = () => setType('expense');
-
-document.getElementById('numpad').addEventListener('click', (e) => {
-  const btn = e.target.closest('button[data-key]');
-  if (!btn) return;
-  const input = document.getElementById('amountInput');
-  const key = btn.dataset.key;
-  if (key === 'back') {
-    input.value = input.value.slice(0, -1);
-  } else if (key === '.') {
-    if (!input.value.includes('.')) input.value += '.';
-  } else {
-    input.value += key;
-  }
-});
 
 function openAdd(type) {
   editingId = null;
