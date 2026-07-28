@@ -161,11 +161,12 @@
   .txItem .cat{font-size:28px;width:40px;text-align:center;}
   .txItem .info{flex:1;min-width:0;}
   .txItem .catName{font-weight:700;font-size:17px;}
-  .txItem .catName .time{font-weight:500;font-size:13px;color:var(--muted);}
   .txItem .note{color:var(--muted);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .txItem .side{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
   .txItem .amt{font-weight:800;font-size:18px;white-space:nowrap;}
   .txItem .amt.income{color:var(--income-dark);}
   .txItem .amt.expense{color:var(--expense);}
+  .txItem .time{font-size:12px;color:var(--muted);white-space:nowrap;}
   #emptyState{text-align:center;color:var(--muted);padding:40px 20px;}
 
   #exportRow{text-align:center;margin:24px 16px 8px;}
@@ -375,12 +376,10 @@ const CATEGORIES = {
   expense: [
     { id: 'food', em: '🍚', label: 'อาหาร' },
     { id: 'utility', em: '💡', label: 'ค่าน้ำ-ไฟ' },
-    { id: 'travel', em: '🚌', label: 'เดินทาง' },
-    { id: 'medical', em: '💊', label: 'ค่ารักษา' },
     { id: 'shopping', em: '🛒', label: 'ของใช้' },
     { id: 'thaisombun', em: '🏪', label: 'ของไทยสมบูรณ์' },
     { id: 'snack', em: '🍿', label: 'ขนม' },
-    { id: 'home', em: '🏠', label: 'บ้าน' },
+    { id: 'home', em: '🏠', label: 'ค่าเช่าบ้าน' },
     { id: 'shopee', em: '🛍️', label: 'Shopee' },
     { id: 'amway', em: '🧴', label: 'Amway' },
     { id: 'other_out', em: '📦', label: 'อื่นๆ' },
@@ -543,7 +542,7 @@ function renderAll() {
   renderMonthLabel();
 
   const monthTx = currentTx.filter(t => isSameMonth(t.date, viewMonth))
-    .sort((a,b) => b.date.localeCompare(a.date));
+    .sort((a,b) => (b.date + ' ' + (b.time || '00:00')).localeCompare(a.date + ' ' + (a.time || '00:00')));
 
   const listEl = document.getElementById('txList');
   const emptyEl = document.getElementById('emptyState');
@@ -572,10 +571,13 @@ function renderAll() {
     item.innerHTML = `
       <div class="cat">${info.em}</div>
       <div class="info">
-        <div class="catName">${info.label}${t.time ? ` <span class="time">${escapeHtml(t.time)} น.</span>` : ''}</div>
+        <div class="catName">${info.label}</div>
         ${t.note ? `<div class="note">${escapeHtml(t.note)}</div>` : ''}
       </div>
-      <div class="amt ${t.type}">${t.type === 'income' ? '+' : '-'}${fmt(t.amount)}</div>
+      <div class="side">
+        <div class="amt ${t.type}">${t.type === 'income' ? '+' : '-'}${fmt(t.amount)}</div>
+        ${t.time ? `<div class="time">${escapeHtml(t.time)} น.</div>` : ''}
+      </div>
     `;
     item.onclick = () => openEdit(t);
     listEl.appendChild(item);
