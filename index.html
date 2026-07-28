@@ -129,6 +129,29 @@
   .balanceSplit .amt{font-size:20px;font-weight:700;}
   .balanceSplit .in .amt{color:var(--income-dark);}
   .balanceSplit .out .amt{color:var(--expense);}
+  #netRow{margin-top:10px;font-size:15px;color:var(--muted);}
+  #netAmount{font-weight:700;}
+  #netAmount.positive{color:var(--income-dark);}
+  #netAmount.negative{color:var(--expense);}
+
+  .summaryToggle{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    width:calc(100% - 32px);margin:14px 16px 0;
+    background:var(--surface);border:2px solid var(--border);border-radius:14px;
+    padding:12px;font-size:15px;font-weight:600;color:var(--muted);cursor:pointer;
+  }
+  #categorySummary{margin:10px 16px 0;display:flex;flex-direction:column;gap:14px;}
+  #categorySummary.hidden{display:none;}
+  .summaryCol{background:var(--surface);border-radius:14px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+  .summaryColTitle{font-weight:700;font-size:15px;margin-bottom:8px;}
+  .summaryColTitle.expense{color:var(--expense);}
+  .summaryColTitle.income{color:var(--income-dark);}
+  .summaryRow{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);}
+  .summaryRow:last-child{border-bottom:none;}
+  .summaryRow .em{font-size:18px;width:26px;text-align:center;}
+  .summaryRow .label{flex:1;font-size:15px;}
+  .summaryRow .amt{font-weight:700;font-size:15px;}
+  .summaryEmpty{color:var(--muted);font-size:14px;padding:6px 0;}
 
   #monthNav{
     display:flex;align-items:center;justify-content:center;gap:18px;
@@ -271,12 +294,25 @@
       <div class="in"><div class="label">รายรับเดือนนี้</div><div class="amt" id="monthIncome">0</div></div>
       <div class="out"><div class="label">รายจ่ายเดือนนี้</div><div class="amt" id="monthExpense">0</div></div>
     </div>
+    <div id="netRow">สุทธิเดือนนี้ <span id="netAmount">0 บาท</span></div>
   </div>
 
   <div id="monthNav">
     <button id="prevMonth">‹</button>
     <div id="monthLabel"></div>
     <button id="nextMonth">›</button>
+  </div>
+
+  <button id="summaryToggleBtn" class="summaryToggle">📊 สรุปตามหมวดหมู่ <span id="summaryChevron">▾</span></button>
+  <div id="categorySummary" class="hidden">
+    <div class="summaryCol">
+      <div class="summaryColTitle expense">รายจ่าย</div>
+      <div id="expenseSummaryList"></div>
+    </div>
+    <div class="summaryCol">
+      <div class="summaryColTitle income">รายรับ</div>
+      <div id="incomeSummaryList"></div>
+    </div>
   </div>
 
   <div id="addRow">
@@ -312,11 +348,11 @@
       <label>โน้ต (ไม่บังคับ)</label>
       <input type="text" id="noteInput" placeholder="เช่น ตลาดนัด">
     </div>
-    <div class="field">
+    <div class="field hidden">
       <label>วันที่</label>
       <input type="date" id="dateInput">
     </div>
-    <div class="field">
+    <div class="field hidden">
       <label>เวลา</label>
       <input type="time" id="timeInput">
     </div>
@@ -522,6 +558,27 @@ function isSameMonth(dateStr, ref) {
   return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth();
 }
 
+function renderCategorySummaryList(elId, sums, type) {
+  const el = document.getElementById(elId);
+  const entries = Object.entries(sums).sort((a, b) => b[1] - a[1]);
+  if (entries.length === 0) {
+    el.innerHTML = '<div class="summaryEmpty">ไม่มีรายการ</div>';
+    return;
+  }
+  el.innerHTML = entries.map(([catId, amt]) => {
+    const info = catInfo(type, catId);
+    return `<div class="summaryRow"><span class="em">${info.em}</span><span class="label">${info.label}</span><span class="amt">${fmt(amt)}</span></div>`;
+  }).join('');
+}
+
+document.getElementById('summaryToggleBtn').onclick = () => {
+  const panel = document.getElementById('categorySummary');
+  const chevron = document.getElementById('summaryChevron');
+  const willShow = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !willShow);
+  chevron.textContent = willShow ? '▴' : '▾';
+};
+
 function renderAll() {
   // all-time balance
   let balance = 0, monthIncome = 0, monthExpense = 0;
@@ -529,9 +586,12 @@ function renderAll() {
     const amt = Number(t.amount) || 0;
     balance += (t.type === 'income' ? amt : -amt);
   });
-  currentTx.filter(t => isSameMonth(t.date, viewMonth)).forEach(t => {
+  const monthTxUnsorted = currentTx.filter(t => isSameMonth(t.date, viewMonth));
+  const catSums = { income: {}, expense: {} };
+  monthTxUnsorted.forEach(t => {
     const amt = Number(t.amount) || 0;
     if (t.type === 'income') monthIncome += amt; else monthExpense += amt;
+    catSums[t.type][t.category] = (catSums[t.type][t.category] || 0) + amt;
   });
 
   const balEl = document.getElementById('balanceAmount');
@@ -539,9 +599,18 @@ function renderAll() {
   balEl.className = balance < 0 ? 'negative' : 'positive';
   document.getElementById('monthIncome').textContent = fmt(monthIncome);
   document.getElementById('monthExpense').textContent = fmt(monthExpense);
+
+  const net = monthIncome - monthExpense;
+  const netEl = document.getElementById('netAmount');
+  netEl.textContent = (net < 0 ? '-' : '+') + fmt(Math.abs(net)) + ' บาท';
+  netEl.className = net < 0 ? 'negative' : 'positive';
+
+  renderCategorySummaryList('expenseSummaryList', catSums.expense, 'expense');
+  renderCategorySummaryList('incomeSummaryList', catSums.income, 'income');
+
   renderMonthLabel();
 
-  const monthTx = currentTx.filter(t => isSameMonth(t.date, viewMonth))
+  const monthTx = monthTxUnsorted
     .sort((a,b) => (b.date + ' ' + (b.time || '00:00')).localeCompare(a.date + ' ' + (a.time || '00:00')));
 
   const listEl = document.getElementById('txList');
