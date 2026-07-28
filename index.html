@@ -161,6 +161,7 @@
   .txItem .cat{font-size:28px;width:40px;text-align:center;}
   .txItem .info{flex:1;min-width:0;}
   .txItem .catName{font-weight:700;font-size:17px;}
+  .txItem .catName .time{font-weight:500;font-size:13px;color:var(--muted);}
   .txItem .note{color:var(--muted);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .txItem .amt{font-weight:800;font-size:18px;white-space:nowrap;}
   .txItem .amt.income{color:var(--income-dark);}
@@ -311,6 +312,10 @@
       <input type="date" id="dateInput">
     </div>
     <div class="field">
+      <label>เวลา</label>
+      <input type="time" id="timeInput">
+    </div>
+    <div class="field">
       <label>โน้ต (ไม่บังคับ)</label>
       <input type="text" id="noteInput" placeholder="เช่น ตลาดนัด">
     </div>
@@ -376,6 +381,8 @@ const CATEGORIES = {
     { id: 'thaisombun', em: '🏪', label: 'ของไทยสมบูรณ์' },
     { id: 'snack', em: '🍿', label: 'ขนม' },
     { id: 'home', em: '🏠', label: 'บ้าน' },
+    { id: 'shopee', em: '🛍️', label: 'Shopee' },
+    { id: 'amway', em: '🧴', label: 'Amway' },
     { id: 'other_out', em: '📦', label: 'อื่นๆ' },
   ]
 };
@@ -386,6 +393,11 @@ function catInfo(type, id) {
 
 function fmt(n) {
   return Number(n).toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+
+function currentTimeStr() {
+  const d = new Date();
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
 }
 
 // ---------------- Household (secret link) resolution ----------------
@@ -560,7 +572,7 @@ function renderAll() {
     item.innerHTML = `
       <div class="cat">${info.em}</div>
       <div class="info">
-        <div class="catName">${info.label}</div>
+        <div class="catName">${info.label}${t.time ? ` <span class="time">${escapeHtml(t.time)} น.</span>` : ''}</div>
         ${t.note ? `<div class="note">${escapeHtml(t.note)}</div>` : ''}
       </div>
       <div class="amt ${t.type}">${t.type === 'income' ? '+' : '-'}${fmt(t.amount)}</div>
@@ -619,6 +631,7 @@ function openAdd(type) {
   document.getElementById('amountInput').value = '';
   document.getElementById('noteInput').value = '';
   document.getElementById('dateInput').valueAsDate = new Date();
+  document.getElementById('timeInput').value = currentTimeStr();
   setType(type);
   overlay.classList.remove('hidden');
 }
@@ -631,6 +644,7 @@ function openEdit(t) {
   document.getElementById('amountInput').value = t.amount;
   document.getElementById('noteInput').value = t.note || '';
   document.getElementById('dateInput').value = t.date;
+  document.getElementById('timeInput').value = t.time || '';
   selectedCat = t.category;
   setType(t.type);
   selectedCat = t.category;
@@ -645,6 +659,7 @@ document.getElementById('cancelBtn').onclick = () => overlay.classList.add('hidd
 document.getElementById('saveBtn').onclick = async () => {
   const amount = parseFloat(document.getElementById('amountInput').value);
   const date = document.getElementById('dateInput').value;
+  const time = document.getElementById('timeInput').value;
   const note = document.getElementById('noteInput').value.trim();
 
   if (!amount || amount <= 0) { alert('กรุณาใส่จำนวนเงิน'); return; }
@@ -656,6 +671,7 @@ document.getElementById('saveBtn').onclick = async () => {
     category: selectedCat,
     amount: amount,
     date: date,
+    time: time || null,
     note: note,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
   };
@@ -701,11 +717,12 @@ document.getElementById('confirmDeleteBtn').onclick = async () => {
 // ---------------- CSV export ----------------
 document.getElementById('exportBtn').onclick = () => {
   if (currentTx.length === 0) { alert('ยังไม่มีข้อมูลให้ส่งออก'); return; }
-  const rows = [['วันที่', 'ประเภท', 'หมวดหมู่', 'จำนวนเงิน', 'โน้ต']];
+  const rows = [['วันที่', 'เวลา', 'ประเภท', 'หมวดหมู่', 'จำนวนเงิน', 'โน้ต']];
   [...currentTx].sort((a, b) => a.date.localeCompare(b.date)).forEach(t => {
     const info = catInfo(t.type, t.category);
     rows.push([
       t.date,
+      t.time || '',
       t.type === 'income' ? 'รายรับ' : 'รายจ่าย',
       info.label,
       t.amount,
