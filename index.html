@@ -30,7 +30,7 @@
     font-family:'Noto Sans Thai','Sarabun',sans-serif;
     background:var(--bg);
     color:var(--text);
-    font-size:19px;
+    font-size:21px;
     line-height:1.5;
     padding-bottom:100px;
   }
@@ -59,7 +59,7 @@
     width:100%;
     max-width:480px;
     word-break:break-all;
-    font-size:15px;
+    font-size:16px;
     color:var(--muted);
   }
   .bigBtn{
@@ -97,10 +97,10 @@
     align-items:center;
     gap:10px;
   }
-  .joinLabel{color:var(--muted);font-size:14px;margin:0;}
+  .joinLabel{color:var(--muted);font-size:15px;margin:0;}
   #joinLinkInput{
     width:100%;padding:14px;border-radius:12px;border:2px solid var(--border);
-    font-size:15px;font-family:inherit;
+    font-size:16px;font-family:inherit;
   }
 
   /* ---------- App shell ---------- */
@@ -120,7 +120,7 @@
     box-shadow:0 4px 14px rgba(0,0,0,0.08);
     text-align:center;
   }
-  #balanceCard .label{color:var(--muted);font-size:16px;}
+  #balanceCard .label{color:var(--muted);font-size:17px;}
   #balanceAmount{font-size:38px;font-weight:800;margin:4px 0 14px;}
   #balanceAmount.negative{color:var(--expense);}
   #balanceAmount.positive{color:var(--income-dark);}
@@ -129,7 +129,7 @@
   .balanceSplit .amt{font-size:20px;font-weight:700;}
   .balanceSplit .in .amt{color:var(--income-dark);}
   .balanceSplit .out .amt{color:var(--expense);}
-  #netRow{margin-top:10px;font-size:15px;color:var(--muted);}
+  #netRow{margin-top:10px;font-size:16px;color:var(--muted);}
   #netAmount{font-weight:700;}
   #netAmount.positive{color:var(--income-dark);}
   #netAmount.negative{color:var(--expense);}
@@ -138,20 +138,20 @@
     display:flex;align-items:center;justify-content:center;gap:6px;
     width:calc(100% - 32px);margin:14px 16px 0;
     background:var(--surface);border:2px solid var(--border);border-radius:14px;
-    padding:12px;font-size:15px;font-weight:600;color:var(--muted);cursor:pointer;
+    padding:12px;font-size:16px;font-weight:600;color:var(--muted);cursor:pointer;
   }
   #categorySummary{margin:10px 16px 0;display:flex;flex-direction:column;gap:14px;}
   #categorySummary.hidden{display:none;}
   .summaryCol{background:var(--surface);border-radius:14px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
-  .summaryColTitle{font-weight:700;font-size:15px;margin-bottom:8px;}
+  .summaryColTitle{font-weight:700;font-size:16px;margin-bottom:8px;}
   .summaryColTitle.expense{color:var(--expense);}
   .summaryColTitle.income{color:var(--income-dark);}
   .summaryRow{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);}
   .summaryRow:last-child{border-bottom:none;}
-  .summaryRow .em{font-size:18px;width:26px;text-align:center;}
-  .summaryRow .label{flex:1;font-size:15px;}
-  .summaryRow .amt{font-weight:700;font-size:15px;}
-  .summaryEmpty{color:var(--muted);font-size:14px;padding:6px 0;}
+  .summaryRow .em{font-size:19px;width:26px;text-align:center;}
+  .summaryRow .label{flex:1;font-size:16px;}
+  .summaryRow .amt{font-weight:700;font-size:16px;}
+  .summaryEmpty{color:var(--muted);font-size:15px;padding:6px 0;}
 
   #monthNav{
     display:flex;align-items:center;justify-content:center;gap:18px;
@@ -161,16 +161,22 @@
     background:var(--surface);border:2px solid var(--border);border-radius:50%;
     width:44px;height:44px;font-size:20px;cursor:pointer;
   }
-  #monthLabel{font-size:19px;font-weight:700;min-width:150px;text-align:center;}
+  #monthLabel{font-size:20px;font-weight:700;min-width:150px;text-align:center;}
+
+  #todayBtn{
+    display:block;width:calc(100% - 32px);margin:0 16px 8px;
+    background:var(--surface);border:2px solid var(--gold);border-radius:14px;
+    padding:10px;font-size:16px;font-weight:700;color:var(--gold);cursor:pointer;
+  }
 
   #addRow{display:flex;gap:12px;margin:16px;}
-  #addRow button{flex:1;font-size:19px;}
+  #addRow button{flex:1;font-size:20px;}
   #addIncomeBtn{background:var(--income);color:#fff;border:none;}
   #addExpenseBtn{background:var(--expense);color:#fff;border:none;}
   #addRow button{border-radius:14px;padding:16px;font-weight:700;min-height:58px;}
 
   #txList{margin:16px;display:flex;flex-direction:column;gap:10px;}
-  .dayGroup .dayLabel{color:var(--muted);font-size:15px;margin:14px 0 6px;font-weight:600;}
+  .dayGroup .dayLabel{color:var(--muted);font-size:16px;margin:14px 0 6px;font-weight:600;}
   .txItem{
     background:var(--surface);
     border-radius:14px;
@@ -183,20 +189,29 @@
   }
   .txItem .cat{font-size:28px;width:40px;text-align:center;}
   .txItem .info{flex:1;min-width:0;}
-  .txItem .catName{font-weight:700;font-size:17px;}
-  .txItem .note{color:var(--muted);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .txItem .catName{font-weight:700;font-size:18px;}
+  .txItem .note{color:var(--muted);font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .txItem .side{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
-  .txItem .amt{font-weight:800;font-size:18px;white-space:nowrap;}
+  .txItem .amt{font-weight:800;font-size:19px;white-space:nowrap;}
   .txItem .amt.income{color:var(--income-dark);}
   .txItem .amt.expense{color:var(--expense);}
-  .txItem .time{font-size:12px;color:var(--muted);white-space:nowrap;}
+  .txItem .time{font-size:13px;color:var(--muted);white-space:nowrap;}
   #emptyState{text-align:center;color:var(--muted);padding:40px 20px;}
 
   #exportRow{text-align:center;margin:24px 16px 8px;}
   #exportBtn{
-    background:none;border:none;color:var(--muted);font-size:15px;
+    background:none;border:none;color:var(--muted);font-size:16px;
     text-decoration:underline;cursor:pointer;padding:10px;
   }
+
+  #toast{
+    position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(10px);
+    background:var(--text);color:#fff;padding:12px 22px;border-radius:30px;
+    font-size:16px;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,0.2);
+    z-index:100;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;
+    max-width:calc(100% - 32px);text-align:center;
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
   /* ---------- Modal ---------- */
   .overlay{
@@ -211,49 +226,57 @@
     padding:22px 20px 26px;
     max-height:90vh;overflow-y:auto;
   }
-  .sheet h2{font-size:20px;margin-bottom:16px;}
+  .sheet h2{font-size:21px;margin-bottom:16px;}
   .typeToggle{display:flex;gap:10px;margin-bottom:18px;}
   .typeToggle button{
     flex:1;padding:14px;border-radius:12px;border:2px solid var(--border);
-    background:var(--surface);font-size:17px;font-weight:700;cursor:pointer;color:var(--muted);
+    background:var(--surface);font-size:18px;font-weight:700;cursor:pointer;color:var(--muted);
   }
   .typeToggle button.active[data-type="income"]{background:var(--income);border-color:var(--income);color:#fff;}
   .typeToggle button.active[data-type="expense"]{background:var(--expense);border-color:var(--expense);color:#fff;}
 
   .field{margin-bottom:16px;}
-  .field label{display:block;font-size:15px;color:var(--muted);margin-bottom:6px;font-weight:600;}
+  .field label{display:block;font-size:16px;color:var(--muted);margin-bottom:6px;font-weight:600;}
   .field input, .field select{
     width:100%;padding:14px;border-radius:12px;border:2px solid var(--border);
     font-size:20px;font-family:inherit;
   }
-  #amountInput{font-weight:800;text-align:center;font-size:30px;}
+  #amountInput{font-weight:800;text-align:center;font-size:32px;background:var(--bg);}
+
+  .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
+  .numpad button{
+    background:var(--surface);border:2px solid var(--border);border-radius:12px;
+    font-size:24px;font-weight:700;padding:16px 0;cursor:pointer;color:var(--text);
+    min-height:56px;
+  }
+  .numpad button:active{background:var(--bg);}
 
   .catGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
   .catBtn{
     display:flex;flex-direction:column;align-items:center;gap:4px;
     padding:12px 4px;border-radius:12px;border:2px solid var(--border);
-    background:var(--surface);cursor:pointer;font-size:13px;color:var(--muted);
+    background:var(--surface);cursor:pointer;font-size:15px;color:var(--muted);
   }
-  .catBtn .em{font-size:24px;}
+  .catBtn .em{font-size:26px;}
   .catBtn.selected{border-color:var(--gold);background:#fdf6e3;color:var(--text);}
 
   .sheetActions{display:flex;gap:10px;margin-top:20px;}
   .sheetActions button{flex:1;}
-  #deleteBtn{background:var(--surface);color:var(--expense);border:2px solid var(--expense);border-radius:14px;padding:16px;font-weight:700;font-size:17px;cursor:pointer;}
-  #saveBtn{background:var(--income);color:#fff;border:none;border-radius:14px;padding:16px;font-weight:700;font-size:17px;cursor:pointer;}
-  #cancelBtn{background:var(--surface);color:var(--muted);border:2px solid var(--border);border-radius:14px;padding:16px;font-weight:700;font-size:17px;cursor:pointer;}
+  #deleteBtn{background:var(--surface);color:var(--expense);border:2px solid var(--expense);border-radius:14px;padding:16px;font-weight:700;font-size:18px;cursor:pointer;}
+  #saveBtn{background:var(--income);color:#fff;border:none;border-radius:14px;padding:16px;font-weight:700;font-size:18px;cursor:pointer;}
+  #cancelBtn{background:var(--surface);color:var(--muted);border:2px solid var(--border);border-radius:14px;padding:16px;font-weight:700;font-size:18px;cursor:pointer;}
 
   .confirmSheet{text-align:center;border-radius:22px;max-width:420px;}
   .confirmIcon{font-size:44px;margin-bottom:8px;}
-  .confirmSheet h2{font-size:20px;margin-bottom:8px;}
-  .confirmDetail{color:var(--muted);font-size:16px;margin-bottom:4px;}
-  #confirmCancelBtn{background:var(--surface);color:var(--muted);border:2px solid var(--border);border-radius:14px;padding:16px;font-weight:700;font-size:17px;cursor:pointer;}
-  #confirmDeleteBtn{background:var(--expense);color:#fff;border:none;border-radius:14px;padding:16px;font-weight:700;font-size:17px;cursor:pointer;}
+  .confirmSheet h2{font-size:21px;margin-bottom:8px;}
+  .confirmDetail{color:var(--muted);font-size:17px;margin-bottom:4px;}
+  #confirmCancelBtn{background:var(--surface);color:var(--muted);border:2px solid var(--border);border-radius:14px;padding:16px;font-weight:700;font-size:18px;cursor:pointer;}
+  #confirmDeleteBtn{background:var(--expense);color:#fff;border:none;border-radius:14px;padding:16px;font-weight:700;font-size:18px;cursor:pointer;}
 
   #syncBadge{
     display:inline-flex;align-items:center;gap:6px;
     background:rgba(255,255,255,0.15);border-radius:20px;
-    padding:5px 12px;font-size:13px;color:#fff;margin-top:8px;
+    padding:5px 12px;font-size:14px;color:#fff;margin-top:8px;
   }
   #syncDot{width:9px;height:9px;border-radius:50%;background:#ccc;flex:none;}
   #syncDot.ok{background:var(--income);}
@@ -303,6 +326,8 @@
     <button id="nextMonth">›</button>
   </div>
 
+  <button id="todayBtn" class="hidden">🔙 กลับไปเดือนนี้</button>
+
   <button id="summaryToggleBtn" class="summaryToggle">📊 สรุปตามหมวดหมู่ <span id="summaryChevron">▾</span></button>
   <div id="categorySummary" class="hidden">
     <div class="summaryCol">
@@ -328,6 +353,8 @@
   </div>
 </div>
 
+<div id="toast" class="hidden"></div>
+
 <!-- Add/Edit sheet -->
 <div class="overlay hidden" id="overlay">
   <div class="sheet">
@@ -338,7 +365,21 @@
     </div>
     <div class="field">
       <label>จำนวนเงิน (บาท)</label>
-      <input type="number" inputmode="decimal" id="amountInput" placeholder="0" min="0" step="0.01">
+      <input type="text" inputmode="none" id="amountInput" placeholder="0" readonly>
+      <div class="numpad" id="numpad">
+        <button type="button" data-key="1">1</button>
+        <button type="button" data-key="2">2</button>
+        <button type="button" data-key="3">3</button>
+        <button type="button" data-key="4">4</button>
+        <button type="button" data-key="5">5</button>
+        <button type="button" data-key="6">6</button>
+        <button type="button" data-key="7">7</button>
+        <button type="button" data-key="8">8</button>
+        <button type="button" data-key="9">9</button>
+        <button type="button" data-key=".">.</button>
+        <button type="button" data-key="0">0</button>
+        <button type="button" data-key="back">⌫</button>
+      </div>
     </div>
     <div class="field">
       <label>หมวดหมู่</label>
@@ -433,6 +474,19 @@ function fmt(n) {
 function currentTimeStr() {
   const d = new Date();
   return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+let toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  requestAnimationFrame(() => el.classList.add('show'));
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => el.classList.add('hidden'), 250);
+  }, 1800);
 }
 
 // ---------------- Household (secret link) resolution ----------------
@@ -610,6 +664,10 @@ function renderAll() {
 
   renderMonthLabel();
 
+  const now = new Date();
+  const isCurrentMonth = viewMonth.getFullYear() === now.getFullYear() && viewMonth.getMonth() === now.getMonth();
+  document.getElementById('todayBtn').classList.toggle('hidden', isCurrentMonth);
+
   const monthTx = monthTxUnsorted
     .sort((a,b) => (b.date + ' ' + (b.time || '00:00')).localeCompare(a.date + ' ' + (a.time || '00:00')));
 
@@ -667,14 +725,34 @@ document.getElementById('nextMonth').onclick = () => {
   viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1);
   renderAll();
 };
+document.getElementById('todayBtn').onclick = () => {
+  viewMonth = new Date();
+  renderAll();
+};
 
 // ---------------- Add / Edit sheet ----------------
 const overlay = document.getElementById('overlay');
 const catGrid = document.getElementById('catGrid');
 
+function getCategoryOrder(type) {
+  const counts = {};
+  currentTx.forEach(t => {
+    if (t.type === type) counts[t.category] = (counts[t.category] || 0) + 1;
+  });
+  const cats = CATEGORIES[type].slice();
+  cats.sort((a, b) => {
+    const aOther = a.id.startsWith('other');
+    const bOther = b.id.startsWith('other');
+    if (aOther !== bOther) return aOther ? 1 : -1;
+    if (aOther && bOther) return 0;
+    return (counts[b.id] || 0) - (counts[a.id] || 0);
+  });
+  return cats;
+}
+
 function renderCatGrid() {
   catGrid.innerHTML = '';
-  CATEGORIES[selectedType].forEach(c => {
+  getCategoryOrder(selectedType).forEach(c => {
     const b = document.createElement('div');
     b.className = 'catBtn' + (selectedCat === c.id ? ' selected' : '');
     b.innerHTML = `<span class="em">${c.em}</span><span>${c.label}</span>`;
@@ -693,6 +771,20 @@ function setType(type) {
 
 document.getElementById('typeIncomeBtn').onclick = () => setType('income');
 document.getElementById('typeExpenseBtn').onclick = () => setType('expense');
+
+document.getElementById('numpad').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-key]');
+  if (!btn) return;
+  const input = document.getElementById('amountInput');
+  const key = btn.dataset.key;
+  if (key === 'back') {
+    input.value = input.value.slice(0, -1);
+  } else if (key === '.') {
+    if (!input.value.includes('.')) input.value += '.';
+  } else {
+    input.value += key;
+  }
+});
 
 function openAdd(type) {
   editingId = null;
@@ -755,6 +847,7 @@ document.getElementById('saveBtn').onclick = async () => {
       await txCollection().add(data);
     }
     overlay.classList.add('hidden');
+    showToast('บันทึกแล้ว ✓');
   } catch (e) {
     alert('บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง');
     console.error(e);
@@ -779,6 +872,7 @@ document.getElementById('confirmDeleteBtn').onclick = async () => {
     await txCollection().doc(editingId).delete();
     confirmOverlay.classList.add('hidden');
     overlay.classList.add('hidden');
+    showToast('ลบรายการแล้ว');
   } catch (e) {
     alert('ลบไม่สำเร็จ ลองใหม่อีกครั้ง');
     console.error(e);
