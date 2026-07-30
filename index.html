@@ -198,8 +198,8 @@
   .txItem .time{font-size:13px;color:var(--muted);white-space:nowrap;}
   #emptyState{text-align:center;color:var(--muted);padding:40px 20px;}
 
-  #exportRow{text-align:center;margin:24px 16px 8px;}
-  #exportBtn{
+  #exportRow{text-align:center;margin:24px 16px 8px;display:flex;flex-direction:column;gap:4px;align-items:center;}
+  #exportBtn, #linkBtn{
     background:none;border:none;color:var(--muted);font-size:16px;
     text-decoration:underline;cursor:pointer;padding:10px;
   }
@@ -342,6 +342,7 @@
 
   <div id="exportRow">
     <button id="exportBtn">📄 ส่งออกข้อมูลทั้งหมด (CSV)</button>
+    <button id="linkBtn">🔗 ลิงก์ครอบครัว / ย้ายเครื่อง</button>
   </div>
 </div>
 
@@ -417,7 +418,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-try { db.enablePersistence({ synchronizeTabs: true }); } catch (e) { /* ok if unsupported */ }
+try { db.enablePersistence({ synchronizeTabs: true }).catch(() => {}); } catch (e) { /* ok if unsupported */ }
 
 const CATEGORIES = {
   income: [
@@ -453,6 +454,14 @@ function fmt(n) {
 function currentTimeStr() {
   const d = new Date();
   return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+// Local-timezone date string. Never use dateInput.valueAsDate = new Date():
+// valueAsDate is UTC-based, so entries added between 00:00 and 07:00 Thai
+// time would silently get yesterday's date (and the date field is hidden).
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
 
 let toastTimer = null;
@@ -491,7 +500,12 @@ function getHouseholdId() {
 
 let householdId = getHouseholdId();
 
-function showSetupScreen() {
+function showSetupScreen(fromApp) {
+  if (fromApp) {
+    document.getElementById('app').classList.add('hidden');
+    document.querySelector('#setupScreen h1').textContent = 'ลิงก์ครอบครัวของคุณ';
+    document.getElementById('copyLinkBtn').textContent = 'คัดลอกลิงก์';
+  }
   document.getElementById('setupScreen').classList.remove('hidden');
   const link = location.origin + location.pathname + '?h=' + householdId;
   document.getElementById('shareLink').textContent = link;
@@ -561,12 +575,16 @@ function txCollection() {
   return db.collection('households').doc(householdId).collection('transactions');
 }
 
+let listening = false;
 function startApp() {
   document.getElementById('app').classList.remove('hidden');
   localStorage.setItem('familyBudgetHasEnteredApp', '1');
-  document.getElementById('dateInput').valueAsDate = new Date();
+  document.getElementById('dateInput').value = todayStr();
   renderMonthLabel();
-  listenTransactions();
+  if (!listening) {
+    listening = true;
+    listenTransactions();
+  }
 }
 
 function listenTransactions() {
@@ -758,7 +776,7 @@ function openAdd(type) {
   document.getElementById('deleteBtn').classList.add('hidden');
   document.getElementById('amountInput').value = '';
   document.getElementById('noteInput').value = '';
-  document.getElementById('dateInput').valueAsDate = new Date();
+  document.getElementById('dateInput').value = todayStr();
   document.getElementById('timeInput').value = currentTimeStr();
   setType(type);
   overlay.classList.remove('hidden');
@@ -844,11 +862,16 @@ document.getElementById('confirmDeleteBtn').onclick = async () => {
   }
 };
 
+// ---------------- Household link management ----------------
+document.getElementById('linkBtn').onclick = () => showSetupScreen(true);
+
 // ---------------- CSV export ----------------
 document.getElementById('exportBtn').onclick = () => {
   if (currentTx.length === 0) { alert('ยังไม่มีข้อมูลให้ส่งออก'); return; }
   const rows = [['วันที่', 'เวลา', 'ประเภท', 'หมวดหมู่', 'จำนวนเงิน', 'โน้ต']];
-  [...currentTx].sort((a, b) => a.date.localeCompare(b.date)).forEach(t => {
+  [...currentTx].sort((a, b) =>
+    (a.date + ' ' + (a.time || '00:00')).localeCompare(b.date + ' ' + (b.time || '00:00'))
+  ).forEach(t => {
     const info = catInfo(t.type, t.category);
     rows.push([
       t.date,
