@@ -196,6 +196,7 @@
   .txItem .amt.income{color:var(--income-dark);}
   .txItem .amt.expense{color:var(--expense);}
   .txItem .time{font-size:13px;color:var(--muted);white-space:nowrap;}
+  .txItem .runBal{font-size:12px;color:var(--muted);white-space:nowrap;}
   #emptyState{text-align:center;color:var(--muted);padding:40px 20px;}
 
   #exportRow{text-align:center;margin:24px 16px 8px;display:flex;flex-direction:column;gap:4px;align-items:center;}
@@ -665,6 +666,19 @@ function renderAll() {
   const isCurrentMonth = viewMonth.getFullYear() === now.getFullYear() && viewMonth.getMonth() === now.getMonth();
   document.getElementById('todayBtn').classList.toggle('hidden', isCurrentMonth);
 
+  // Running balance after each transaction, computed in chronological order
+  // across ALL transactions (not just the viewed month), then looked up per row.
+  const chronological = [...currentTx].sort((a, b) =>
+    (a.date + ' ' + (a.time || '00:00')).localeCompare(b.date + ' ' + (b.time || '00:00'))
+  );
+  const runningBalanceById = {};
+  let running = 0;
+  chronological.forEach(t => {
+    const amt = Number(t.amount) || 0;
+    running += (t.type === 'income' ? amt : -amt);
+    runningBalanceById[t.id] = running;
+  });
+
   const monthTx = monthTxUnsorted
     .sort((a,b) => (b.date + ' ' + (b.time || '00:00')).localeCompare(a.date + ' ' + (a.time || '00:00')));
 
@@ -701,6 +715,7 @@ function renderAll() {
       <div class="side">
         <div class="amt ${t.type}">${t.type === 'income' ? '+' : '-'}${fmt(t.amount)}</div>
         ${t.time ? `<div class="time">${escapeHtml(t.time)} น.</div>` : ''}
+        <div class="runBal">คงเหลือ ${fmt(runningBalanceById[t.id])}</div>
       </div>
     `;
     item.onclick = () => openEdit(t);
