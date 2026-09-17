@@ -190,6 +190,7 @@
   .txItem .cat{font-size:28px;width:40px;text-align:center;}
   .txItem .info{flex:1;min-width:0;}
   .txItem .catName{font-weight:700;font-size:18px;}
+  .txItem .qty{font-weight:600;font-size:14px;color:var(--muted);}
   .txItem .note{color:var(--muted);font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .txItem .side{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
   .txItem .amt{font-weight:800;font-size:19px;white-space:nowrap;}
@@ -378,6 +379,10 @@
     <div class="field">
       <label>จำนวนเงิน (บาท)</label>
       <input type="number" inputmode="decimal" id="amountInput" placeholder="0" min="0" step="0.01">
+    </div>
+    <div class="field">
+      <label>จำนวน (ชิ้น)</label>
+      <input type="number" inputmode="numeric" id="quantityInput" placeholder="1" min="1" step="1" value="1">
     </div>
     <div class="field">
       <label>หมวดหมู่</label>
@@ -767,7 +772,7 @@ function renderAll() {
     item.innerHTML = `
       <div class="cat">${info.em}</div>
       <div class="info">
-        <div class="catName">${info.label}</div>
+        <div class="catName">${info.label}${t.quantity && t.quantity > 1 ? ` <span class="qty">x${t.quantity}</span>` : ''}</div>
         ${t.note ? `<div class="note">${escapeHtml(t.note)}</div>` : ''}
       </div>
       <div class="side">
@@ -849,6 +854,7 @@ function openAdd(type) {
   document.getElementById('sheetTitle').textContent = 'เพิ่มรายการ';
   document.getElementById('deleteBtn').classList.add('hidden');
   document.getElementById('amountInput').value = '';
+  document.getElementById('quantityInput').value = '1';
   document.getElementById('noteInput').value = '';
   document.getElementById('dateInput').value = todayStr();
   document.getElementById('timeInput').value = currentTimeStr();
@@ -864,6 +870,7 @@ function openEdit(t) {
   document.getElementById('sheetTitle').textContent = 'แก้ไขรายการ';
   document.getElementById('deleteBtn').classList.remove('hidden');
   document.getElementById('amountInput').value = t.amount;
+  document.getElementById('quantityInput').value = t.quantity || 1;
   document.getElementById('noteInput').value = t.note || '';
   document.getElementById('dateInput').value = t.date;
   document.getElementById('timeInput').value = t.time || '';
@@ -877,12 +884,22 @@ function openEdit(t) {
   overlay.classList.remove('hidden');
 }
 
+function currentQuantity() {
+  const q = parseInt(document.getElementById('quantityInput').value, 10);
+  return (q && q > 0) ? q : 1;
+}
+
 document.getElementById('amwaySelect').onchange = (e) => {
   const item = amwayItems.find(i => i.id === e.target.value);
   if (!item) return;
   document.getElementById('noteInput').value = item.name;
-  const amtInput = document.getElementById('amountInput');
-  if (!amtInput.value || Number(amtInput.value) === 0) amtInput.value = item.price;
+  document.getElementById('amountInput').value = item.price * currentQuantity();
+};
+
+document.getElementById('quantityInput').oninput = () => {
+  const item = amwayItems.find(i => i.id === document.getElementById('amwaySelect').value);
+  if (!item) return;
+  document.getElementById('amountInput').value = item.price * currentQuantity();
 };
 
 document.getElementById('amwayManageBtn').onclick = () => {
@@ -946,6 +963,7 @@ document.getElementById('cancelBtn').onclick = () => overlay.classList.add('hidd
 
 document.getElementById('saveBtn').onclick = async () => {
   const amount = parseFloat(document.getElementById('amountInput').value);
+  const quantity = currentQuantity();
   const date = document.getElementById('dateInput').value;
   const time = document.getElementById('timeInput').value;
   const note = document.getElementById('noteInput').value.trim();
@@ -958,6 +976,7 @@ document.getElementById('saveBtn').onclick = async () => {
     type: selectedType,
     category: selectedCat,
     amount: amount,
+    quantity: quantity,
     date: date,
     time: time || null,
     note: note,
@@ -1010,7 +1029,7 @@ document.getElementById('linkBtn').onclick = () => showSetupScreen(true);
 // ---------------- CSV export ----------------
 document.getElementById('exportBtn').onclick = () => {
   if (currentTx.length === 0) { alert('ยังไม่มีข้อมูลให้ส่งออก'); return; }
-  const rows = [['วันที่', 'เวลา', 'ประเภท', 'หมวดหมู่', 'จำนวนเงิน', 'โน้ต']];
+  const rows = [['วันที่', 'เวลา', 'ประเภท', 'หมวดหมู่', 'จำนวนเงิน', 'จำนวนชิ้น', 'โน้ต']];
   [...currentTx].sort((a, b) =>
     (a.date + ' ' + (a.time || '00:00')).localeCompare(b.date + ' ' + (b.time || '00:00'))
   ).forEach(t => {
@@ -1021,6 +1040,7 @@ document.getElementById('exportBtn').onclick = () => {
       t.type === 'income' ? 'รายรับ' : 'รายจ่าย',
       info.label,
       t.amount,
+      t.quantity || 1,
       t.note || ''
     ]);
   });
