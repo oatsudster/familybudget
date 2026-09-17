@@ -254,6 +254,23 @@
   .catBtn .em{font-size:26px;}
   .catBtn.selected{border-color:var(--gold);background:#fdf6e3;color:var(--text);}
 
+  .amwayManageBtn{
+    background:none;border:none;color:var(--gold);font-size:14px;
+    text-decoration:underline;cursor:pointer;padding:8px 0;
+  }
+  .amwayManageForm{
+    display:flex;flex-direction:column;gap:10px;margin-top:6px;
+    padding:12px;background:var(--bg);border-radius:12px;
+  }
+  .amwayManageForm input{
+    width:100%;padding:12px;border-radius:10px;border:2px solid var(--border);
+    font-size:16px;font-family:inherit;
+  }
+  .amwayManageActions{display:flex;gap:10px;}
+  .amwayManageActions button{flex:1;border-radius:10px;padding:12px;font-weight:700;font-size:15px;cursor:pointer;}
+  #amwaySaveItemBtn{background:var(--income);color:#fff;border:none;}
+  #amwayDeleteItemBtn{background:var(--surface);color:var(--expense);border:2px solid var(--expense);}
+
   .sheetActions{display:flex;gap:10px;margin-top:20px;}
   .sheetActions button{flex:1;}
   #deleteBtn{background:var(--surface);color:var(--expense);border:2px solid var(--expense);border-radius:14px;padding:16px;font-weight:700;font-size:18px;cursor:pointer;}
@@ -366,6 +383,22 @@
       <label>หมวดหมู่</label>
       <div class="catGrid" id="catGrid"></div>
     </div>
+    <div class="field hidden" id="amwayField">
+      <label>สินค้า Amway</label>
+      <select id="amwaySelect">
+        <option value="">-- เลือกสินค้า --</option>
+      </select>
+      <button type="button" id="amwayManageBtn" class="amwayManageBtn">✏️ เพิ่ม/แก้ไขราคาสินค้า</button>
+      <div id="amwayManageForm" class="amwayManageForm hidden">
+        <input type="text" id="amwayNameInput" placeholder="ชื่อสินค้า เช่น Nutrilite Garlic - 150 Tablets">
+        <input type="number" id="amwayPriceInput" placeholder="ราคา (บาท)" inputmode="decimal" min="0" step="0.01">
+        <div class="amwayManageActions">
+          <button type="button" id="amwaySaveItemBtn">บันทึกราคา</button>
+          <button type="button" id="amwayDeleteItemBtn" class="hidden">ลบสินค้านี้</button>
+        </div>
+      </div>
+    </div>
+
     <div class="field">
       <label>โน้ต (ไม่บังคับ)</label>
       <input type="text" id="noteInput" placeholder="เช่น ตลาดนัด">
@@ -577,6 +610,10 @@ function txCollection() {
   return db.collection('households').doc(householdId).collection('transactions');
 }
 
+function amwayItemsCollection() {
+  return db.collection('households').doc(householdId).collection('amwayItems');
+}
+
 let listening = false;
 function startApp() {
   document.getElementById('app').classList.remove('hidden');
@@ -586,7 +623,27 @@ function startApp() {
   if (!listening) {
     listening = true;
     listenTransactions();
+    listenAmwayItems();
   }
+}
+
+// ---------------- Amway price catalog ----------------
+let amwayItems = [];
+let editingAmwayItemId = null;
+
+function listenAmwayItems() {
+  amwayItemsCollection().orderBy('name').onSnapshot(snap => {
+    amwayItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderAmwaySelect();
+  }, err => console.error(err));
+}
+
+function renderAmwaySelect() {
+  const sel = document.getElementById('amwaySelect');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">-- เลือกสินค้า --</option>' +
+    amwayItems.map(i => `<option value="${i.id}">${escapeHtml(i.name)} — ${fmt(i.price)} บาท</option>`).join('');
+  if (amwayItems.some(i => i.id === current)) sel.value = current;
 }
 
 function listenTransactions() {
@@ -772,6 +829,7 @@ function renderCatGrid() {
     b.onclick = () => { selectedCat = c.id; renderCatGrid(); };
     catGrid.appendChild(b);
   });
+  document.getElementById('amwayField').classList.toggle('hidden', selectedCat !== 'amway');
 }
 
 function setType(type) {
@@ -794,6 +852,8 @@ function openAdd(type) {
   document.getElementById('noteInput').value = '';
   document.getElementById('dateInput').value = todayStr();
   document.getElementById('timeInput').value = currentTimeStr();
+  document.getElementById('amwaySelect').value = '';
+  document.getElementById('amwayManageForm').classList.add('hidden');
   setType(type);
   overlay.classList.remove('hidden');
 }
@@ -807,12 +867,78 @@ function openEdit(t) {
   document.getElementById('noteInput').value = t.note || '';
   document.getElementById('dateInput').value = t.date;
   document.getElementById('timeInput').value = t.time || '';
+  document.getElementById('amwayManageForm').classList.add('hidden');
   selectedCat = t.category;
   setType(t.type);
   selectedCat = t.category;
   renderCatGrid();
+  const matchedItem = t.category === 'amway' ? amwayItems.find(i => i.name === t.note) : null;
+  document.getElementById('amwaySelect').value = matchedItem ? matchedItem.id : '';
   overlay.classList.remove('hidden');
 }
+
+document.getElementById('amwaySelect').onchange = (e) => {
+  const item = amwayItems.find(i => i.id === e.target.value);
+  if (!item) return;
+  document.getElementById('noteInput').value = item.name;
+  const amtInput = document.getElementById('amountInput');
+  if (!amtInput.value || Number(amtInput.value) === 0) amtInput.value = item.price;
+};
+
+document.getElementById('amwayManageBtn').onclick = () => {
+  const form = document.getElementById('amwayManageForm');
+  const willShow = form.classList.contains('hidden');
+  form.classList.toggle('hidden', !willShow);
+  if (willShow) {
+    const sel = document.getElementById('amwaySelect');
+    const item = amwayItems.find(i => i.id === sel.value);
+    editingAmwayItemId = item ? item.id : null;
+    document.getElementById('amwayNameInput').value = item ? item.name : '';
+    document.getElementById('amwayPriceInput').value = item ? item.price : '';
+    document.getElementById('amwayDeleteItemBtn').classList.toggle('hidden', !item);
+  }
+};
+
+document.getElementById('amwaySaveItemBtn').onclick = async () => {
+  const name = document.getElementById('amwayNameInput').value.trim();
+  const price = parseFloat(document.getElementById('amwayPriceInput').value);
+  if (!name) { alert('กรุณาใส่ชื่อสินค้า'); return; }
+  if (!price || price <= 0) { alert('กรุณาใส่ราคา'); return; }
+  try {
+    let savedId = editingAmwayItemId;
+    if (savedId) {
+      await amwayItemsCollection().doc(savedId).update({ name, price, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    } else {
+      const ref = await amwayItemsCollection().add({ name, price, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      savedId = ref.id;
+    }
+    document.getElementById('amwayManageForm').classList.add('hidden');
+    showToast('บันทึกราคาแล้ว ✓');
+    setTimeout(() => {
+      const sel = document.getElementById('amwaySelect');
+      sel.value = savedId;
+      sel.dispatchEvent(new Event('change'));
+    }, 150);
+  } catch (e) {
+    alert('บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง');
+    console.error(e);
+  }
+};
+
+document.getElementById('amwayDeleteItemBtn').onclick = async () => {
+  if (!editingAmwayItemId) return;
+  if (!confirm('ลบสินค้านี้จากรายการหรือไม่? (จะไม่กระทบรายการที่บันทึกไปแล้วในอดีต)')) return;
+  try {
+    await amwayItemsCollection().doc(editingAmwayItemId).delete();
+    document.getElementById('amwayManageForm').classList.add('hidden');
+    document.getElementById('amwaySelect').value = '';
+    editingAmwayItemId = null;
+    showToast('ลบสินค้าแล้ว');
+  } catch (e) {
+    alert('ลบไม่สำเร็จ ลองใหม่อีกครั้ง');
+    console.error(e);
+  }
+};
 
 document.getElementById('addIncomeBtn').onclick = () => openAdd('income');
 document.getElementById('addExpenseBtn').onclick = () => openAdd('expense');
