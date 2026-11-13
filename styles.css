@@ -3,6 +3,9 @@
   --income: #215c40;
   --income-dark: #18482f;
   --expense: #ae3029;
+  --expense-dark: #85231e;
+  --income-soft: #eaf2ec;
+  --expense-soft: #fff0ed;
   --bg: #f4f7f4;
   --surface: #fff;
   --text: #203d2d;
@@ -12,6 +15,16 @@
   font-family: "Noto Sans Thai", Tahoma, sans-serif;
   font-size: 20px;
   line-height: 1.6;
+}
+[data-flow="income"] {
+  --flow-color: var(--income);
+  --flow-dark: var(--income-dark);
+  --flow-soft: var(--income-soft);
+}
+[data-flow="expense"] {
+  --flow-color: var(--expense);
+  --flow-dark: var(--expense-dark);
+  --flow-soft: var(--expense-soft);
 }
 * {
   box-sizing: border-box;
@@ -275,10 +288,13 @@ details[open] > summary {
 }
 .balanceSplit > div {
   min-width: 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--flow-soft);
 }
 .balanceSplit span {
   font-size: 0.9rem;
-  color: var(--muted);
+  color: var(--flow-color);
 }
 .balanceSplit strong {
   display: block;
@@ -354,6 +370,7 @@ details[open] > summary {
   padding: 18px;
   margin: 0 0 10px;
   border: 1px solid var(--border);
+  border-inline-start: 5px solid var(--flow-color);
   border-radius: 18px;
   font-weight: 400;
 }
@@ -379,7 +396,54 @@ details[open] > summary {
 .txItem .detailCue {
   grid-column: 1/-1;
   font-size: 0.8rem;
+  color: var(--flow-color);
+}
+.txItem .typeLabel {
+  color: var(--flow-color);
+  font-weight: 600;
+}
+.txItem:hover {
+  background: var(--flow-soft);
+}
+#addIncomeBtn {
+  background: var(--income);
+  border-color: var(--income);
+  color: white;
+}
+#addIncomeBtn:hover {
+  background: var(--income-dark);
+}
+#addExpenseBtn {
+  background: var(--expense);
+  border-color: var(--expense);
+  color: white;
+}
+#addExpenseBtn:hover {
+  background: var(--expense-dark);
+}
+#editor .sheetHeader,
+#detailDialog .sheetHeader {
+  background: var(--flow-soft);
+}
+#editor .sheetHeader h2,
+#detailDialog .sheetHeader h2,
+#editor #amountInput {
+  color: var(--flow-color);
+}
+#editor #saveBtn,
+#detailDialog #editBtn {
+  background: var(--flow-color);
+  border-color: var(--flow-color);
+}
+#editor #saveBtn:hover,
+#detailDialog #editBtn:hover {
+  background: var(--flow-dark);
+}
+#incomeSummaryList .amt {
   color: var(--income);
+}
+#expenseSummaryList .amt {
+  color: var(--expense);
 }
 .emptyState {
   text-align: center;
@@ -516,9 +580,14 @@ dialog .sheetHeader {
   padding: 10px;
 }
 .typeToggle button[aria-pressed="true"] {
-  background: var(--soft);
+  background: var(--flow-soft);
+  border: 2px solid var(--flow-color);
+}
+#typeIncomeBtn {
   color: var(--income);
-  border: 2px solid var(--income);
+}
+#typeExpenseBtn {
+  color: var(--expense);
 }
 #amountInput {
   font-size: 1.8rem;
@@ -553,9 +622,9 @@ dialog .sheetHeader {
   font-size: 1.25rem;
 }
 .catBtn[aria-pressed="true"] {
-  background: var(--income);
+  background: var(--flow-color);
   color: white;
-  border-color: var(--income);
+  border-color: var(--flow-color);
 }
 .summaryLink {
   float: right;

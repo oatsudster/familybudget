@@ -82,11 +82,11 @@
         </div>
         <button id="todayBtn" class="textButton hidden">กลับไปเดือนปัจจุบัน</button>
         <div class="balanceSplit">
-          <div>
+          <div data-flow="income">
             <span>เงินเข้า</span
             ><strong id="monthIncome" class="income">—</strong>
           </div>
-          <div>
+          <div data-flow="expense">
             <span>เงินออก</span
             ><strong id="monthExpense" class="expense">—</strong>
           </div>
@@ -101,9 +101,9 @@
           ดูสรุปตามหมวดหมู่ <span id="summaryChevron" aria-hidden="true">⌄</span>
         </button>
         <div id="categorySummary" class="hidden">
-          <h3>เงินออก</h3>
+          <h3 class="expense">เงินออก</h3>
           <div id="expenseSummaryList"></div>
-          <h3>เงินเข้า</h3>
+          <h3 class="income">เงินเข้า</h3>
           <div id="incomeSummaryList"></div>
         </div>
       </section>

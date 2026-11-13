@@ -430,8 +430,9 @@
       const cat = catInfo(t.type, t.category),
         button = document.createElement("button");
       button.className = "txItem";
+      button.dataset.flow = t.type;
       button.dataset.transaction = t.id;
-      button.innerHTML = `<span class="title">${escapeHtml(t.note || cat.label)}</span><span class="amt ${t.type}">${t.type === "income" ? "+" : "−"}${fmt(t.amount)}</span><span class="meta">${cat.em} ${escapeHtml(cat.label)}${t.quantity > 1 ? " · " + fmt(t.quantity) + " ชิ้น" : ""}</span><span class="detailCue">ดูรายละเอียด ›</span>`;
+      button.innerHTML = `<span class="title">${escapeHtml(t.note || cat.label)}</span><span class="amt ${t.type}">${t.type === "income" ? "+" : "−"}${fmt(t.amount)}</span><span class="meta"><span class="typeLabel">${t.type === "income" ? "เงินเข้า" : "เงินออก"}</span> · ${cat.em} ${escapeHtml(cat.label)}${t.quantity > 1 ? " · " + fmt(t.quantity) + " ชิ้น" : ""}</span><span class="detailCue">ดูรายละเอียด ›</span>`;
       button.onclick = () => openDetail(t.id);
       list.appendChild(button);
       if (focusedId === t.id) button.focus({ preventScroll: true });
@@ -487,6 +488,7 @@
   });
   function renderDetail(t) {
     const cat = catInfo(t.type, t.category);
+    $("detailDialog").dataset.flow = t.type;
     $("detailContent").innerHTML =
       `<p class="small">${t.type === "income" ? "เงินเข้า" : "เงินออก"} · ${escapeHtml(cat.label)}</p><p class="detailAmount ${t.type}">${t.type === "income" ? "+" : "−"}${fmt(t.amount)} บาท</p><dl><dt>วันที่และเวลา</dt><dd>${thaiDate(t.date)}${t.time ? " · " + escapeHtml(t.time) + " น." : ""}</dd><dt>จำนวน</dt><dd>${fmt(t.quantity || 1)} ชิ้น</dd><dt>บันทึกช่วยจำ</dt><dd>${escapeHtml(t.note || "ไม่ได้ระบุ")}</dd><dt>เงินคงเหลือหลังรายการนี้</dt><dd>${fmt(runningBalances[t.id])} บาท</dd></dl>`;
   }
@@ -566,6 +568,7 @@
   }
   function setType(type, category = null) {
     selectedType = type;
+    $("editor").dataset.flow = type;
     selectedCat = category;
     $("typeIncomeBtn").setAttribute("aria-pressed", String(type === "income"));
     $("typeExpenseBtn").setAttribute(
