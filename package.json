@@ -1,0 +1,25 @@
+{
+  "name": "family-budget",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/app.test.cjs",
+    "preview": "node tests/preview-server.cjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oatsudster/familybudget.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/oatsudster/familybudget/issues"
+  },
+  "homepage": "https://github.com/oatsudster/familybudget#readme",
+  "devDependencies": {
+    "jsdom": "^31.0.0"
+  }
+}

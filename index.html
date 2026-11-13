@@ -1,1062 +1,304 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>รายรับ-รายจ่าย</title>
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-180.png">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1A5E38">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="รายรับ-รายจ่าย">
-<style>
-  :root{
-    --income:#1A7A4C;
-    --income-dark:#125C39;
-    --expense:#C0392B;
-    --expense-dark:#962A20;
-    --bg:#F4F7F5;
-    --surface:#ffffff;
-    --text:#222;
-    --muted:#6b7280;
-    --border:#e3e7e4;
-    --gold:#C49A22;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    font-family:'Noto Sans Thai','Sarabun',sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    font-size:21px;
-    line-height:1.5;
-    padding-bottom:100px;
-  }
-  h1,h2,h3{margin:0;}
-  button{font-family:inherit;}
-
-  /* ---------- Setup / share screen ---------- */
-  #setupScreen{
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    padding:24px;
-    text-align:center;
-    gap:16px;
-  }
-  #setupScreen .icon{font-size:56px;}
-  #setupScreen h1{font-size:26px;color:var(--income-dark);}
-  #setupScreen p{color:var(--muted);max-width:480px;font-size:18px;}
-  .linkBox{
-    background:var(--surface);
-    border:2px solid var(--border);
-    border-radius:14px;
-    padding:16px;
-    width:100%;
-    max-width:480px;
-    word-break:break-all;
-    font-size:16px;
-    color:var(--muted);
-  }
-  .bigBtn{
-    background:var(--income);
-    color:#fff;
-    border:none;
-    border-radius:14px;
-    padding:18px 28px;
-    font-size:20px;
-    font-weight:700;
-    cursor:pointer;
-    min-height:56px;
-  }
-  .bigBtn:active{background:var(--income-dark);}
-  .secondaryBtn{
-    background:var(--surface);
-    color:var(--text);
-    border:2px solid var(--border);
-    border-radius:14px;
-    padding:16px 24px;
-    font-size:18px;
-    font-weight:600;
-    cursor:pointer;
-    min-height:56px;
-  }
-
-  .joinBox{
-    margin-top:32px;
-    padding-top:24px;
-    border-top:1px solid var(--border);
-    width:100%;
-    max-width:480px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:10px;
-  }
-  .joinLabel{color:var(--muted);font-size:15px;margin:0;}
-  #joinLinkInput{
-    width:100%;padding:14px;border-radius:12px;border:2px solid var(--border);
-    font-size:16px;font-family:inherit;
-  }
-
-  /* ---------- App shell ---------- */
-  #app{max-width:640px;margin:0 auto;}
-  header{
-    background:var(--income);
-    color:#fff;
-    padding:20px 16px 28px;
-    text-align:center;
-  }
-  header h1{font-size:22px;font-weight:700;}
-  #balanceCard{
-    background:var(--surface);
-    margin:-20px 16px 0;
-    border-radius:18px;
-    padding:20px;
-    box-shadow:0 4px 14px rgba(0,0,0,0.08);
-    text-align:center;
-  }
-  #balanceCard .label{color:var(--muted);font-size:17px;}
-  #balanceAmount{font-size:38px;font-weight:800;margin:4px 0 14px;}
-  #balanceAmount.negative{color:var(--expense);}
-  #balanceAmount.positive{color:var(--income-dark);}
-  .balanceSplit{display:flex;gap:12px;}
-  .balanceSplit>div{flex:1;background:var(--bg);border-radius:12px;padding:10px;}
-  .balanceSplit .amt{font-size:20px;font-weight:700;}
-  .balanceSplit .in .amt{color:var(--income-dark);}
-  .balanceSplit .out .amt{color:var(--expense);}
-  #netRow{margin-top:10px;font-size:16px;color:var(--muted);}
-  #netAmount{font-weight:700;}
-  #netAmount.positive{color:var(--income-dark);}
-  #netAmount.negative{color:var(--expense);}
-
-  .summaryToggle{
-    display:flex;align-items:center;justify-content:center;gap:6px;
-    width:calc(100% - 32px);margin:14px 16px 0;
-    background:var(--surface);border:2px solid var(--border);border-radius:14px;
-    padding:12px;font-size:16px;font-weight:600;color:var(--muted);cursor:pointer;
-  }
-  #categorySummary{margin:10px 16px 0;display:flex;flex-direction:column;gap:14px;}
-  #categorySummary.hidden{display:none;}
-  .summaryCol{background:var(--surface);border-radius:14px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
-  .summaryColTitle{font-weight:700;font-size:16px;margin-bottom:8px;}
-  .summaryColTitle.expense{color:var(--expense);}
-  .summaryColTitle.income{color:var(--income-dark);}
-  .summaryRow{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);}
-  .summaryRow:last-child{border-bottom:none;}
-  .summaryRow .em{font-size:19px;width:26px;text-align:center;}
-  .summaryRow .label{flex:1;font-size:16px;}
-  .summaryRow .amt{font-weight:700;font-size:16px;}
-  .summaryEmpty{color:var(--muted);font-size:15px;padding:6px 0;}
-
-  #monthNav{
-    display:flex;align-items:center;justify-content:center;gap:18px;
-    margin:20px 16px 8px;
-  }
-  #monthNav button{
-    background:var(--surface);border:2px solid var(--border);border-radius:50%;
-    width:44px;height:44px;font-size:20px;cursor:pointer;
-  }
-  #monthLabel{font-size:20px;font-weight:700;min-width:150px;text-align:center;}
-
-  #todayBtn{
-    display:block;width:calc(100% - 32px);margin:0 16px 8px;
-    background:var(--surface);border:2px solid var(--gold);border-radius:14px;
-    padding:10px;font-size:16px;font-weight:700;color:var(--gold);cursor:pointer;
-  }
-
-  #addRow{display:flex;gap:12px;margin:16px;}
-  #addRow button{flex:1;font-size:20px;}
-  #addIncomeBtn{background:var(--income);color:#fff;border:none;}
-  #addExpenseBtn{background:var(--expense);color:#fff;border:none;}
-  #addRow button{border-radius:14px;padding:16px;font-weight:700;min-height:58px;}
-
-  #txList{margin:16px;display:flex;flex-direction:column;gap:10px;}
-  .dayGroup .dayLabel{color:var(--muted);font-size:16px;margin:14px 0 6px;font-weight:600;}
-  .txItem{
-    background:var(--surface);
-    border-radius:14px;
-    padding:14px 16px;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    box-shadow:0 1px 4px rgba(0,0,0,0.05);
-    cursor:pointer;
-  }
-  .txItem .cat{font-size:28px;width:40px;text-align:center;}
-  .txItem .info{flex:1;min-width:0;}
-  .txItem .catName{font-weight:700;font-size:18px;}
-  .txItem .qty{font-weight:600;font-size:14px;color:var(--muted);}
-  .txItem .note{color:var(--muted);font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .txItem .side{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
-  .txItem .amt{font-weight:800;font-size:19px;white-space:nowrap;}
-  .txItem .amt.income{color:var(--income-dark);}
-  .txItem .amt.expense{color:var(--expense);}
-  .txItem .time{font-size:13px;color:var(--muted);white-space:nowrap;}
-  .txItem .runBal{font-size:12px;color:var(--muted);white-space:nowrap;}
-  #emptyState{text-align:center;color:var(--muted);padding:40px 20px;}
-
-  #exportRow{text-align:center;margin:24px 16px 8px;display:flex;flex-direction:column;gap:4px;align-items:center;}
-  #exportBtn, #linkBtn{
-    background:none;border:none;color:var(--muted);font-size:16px;
-    text-decoration:underline;cursor:pointer;padding:10px;
-  }
-
-  #toast{
-    position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(10px);
-    background:var(--text);color:#fff;padding:12px 22px;border-radius:30px;
-    font-size:16px;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,0.2);
-    z-index:100;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;
-    max-width:calc(100% - 32px);text-align:center;
-  }
-  #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-
-  /* ---------- Modal ---------- */
-  .overlay{
-    position:fixed;inset:0;background:rgba(0,0,0,0.45);
-    display:flex;align-items:flex-end;justify-content:center;
-    z-index:50;
-  }
-  .sheet{
-    background:var(--surface);
-    width:100%;max-width:520px;
-    border-radius:22px 22px 0 0;
-    padding:22px 20px 26px;
-    max-height:90vh;overflow-y:auto;
-  }
-  .sheet h2{font-size:21px;margin-bottom:16px;}
-  .typeToggle{display:flex;gap:10px;margin-bottom:18px;}
-  .typeToggle button{
-    flex:1;padding:14px;border-radius:12px;border:2px solid var(--border);
-    background:var(--surface);font-size:18px;font-weight:700;cursor:pointer;color:var(--muted);
-  }
-  .typeToggle button.active[data-type="income"]{background:var(--income);border-color:var(--income);color:#fff;}
-  .typeToggle button.active[data-type="expense"]{background:var(--expense);border-color:var(--expense);color:#fff;}
-
-  .field{margin-bottom:16px;}
-  .field label{display:block;font-size:16px;color:var(--muted);margin-bottom:6px;font-weight:600;}
-  .field input, .field select{
-    width:100%;padding:14px;border-radius:12px;border:2px solid var(--border);
-    font-size:20px;font-family:inherit;
-  }
-  #amountInput{font-weight:800;text-align:center;font-size:32px;}
-
-  .catGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
-  .catBtn{
-    display:flex;flex-direction:column;align-items:center;gap:4px;
-    padding:12px 4px;border-radius:12px;border:2px solid var(--border);
-    background:var(--surface);cursor:pointer;font-size:15px;color:var(--muted);
-    text-align:center;
-  }
-  .catBtn .em{font-size:26px;}
-  .catBtn.selected{border-color:var(--gold);background:#fdf6e3;color:var(--text);}
-
-  .amwayManageBtn{
-    background:none;border:none;color:var(--gold);font-size:14px;
-    text-decoration:underline;cursor:pointer;padding:8px 0;
-  }
-  .amwayManageForm{
-    display:flex;flex-direction:column;gap:10px;margin-top:6px;
-    padding:12px;background:var(--bg);border-radius:12px;
-  }
-  .amwayManageForm input{
-    width:100%;padding:12px;border-radius:10px;border:2px solid var(--border);
-    font-size:16px;font-family:inherit;
-  }
-  .amwayManageActions{display:flex;gap:10px;}
-  .amwayManageActions button{flex:1;border-radius:10px;padding:12px;font-weight:700;font-size:15px;cursor:pointer;}
-  #amwaySaveItemBtn{background:var(--income);color:#fff;border:none;}
-  #amwayDeleteItemBtn{background:var(--surface);color:var(--expense);border:2px solid var(--expense);}
-
-  .sheetActions{display:flex;gap:10px;margin-top:20px;}
-  .sheetActions button{flex:1;}
-  #deleteBtn{background:var(--surface);color:var(--expense);border:2px solid var(--expense);border-radius:14px;padding:16px;font-weight:700;font-size:18px;cursor:pointer;}
-  #saveBtn{background:var(--income);color:#fff;border:none;border-radius:14px;padding:16px;font-weight:700;font-size:18px;cursor:pointer;}
-  #cancelBtn{background:var(--surface);color:var(--muted);border:2px solid var(--border);border-radius:14px;padding:16px;font-weight:700;font-size:18px;cursor:pointer;}
-
-  .confirmSheet{text-align:center;border-radius:22px;max-width:420px;}
-  .confirmIcon{font-size:44px;margin-bottom:8px;}
-  .confirmSheet h2{font-size:21px;margin-bottom:8px;}
-  .confirmDetail{color:var(--muted);font-size:17px;margin-bottom:4px;}
-  #confirmCancelBtn{background:var(--surface);color:var(--muted);border:2px solid var(--border);border-radius:14px;padding:16px;font-weight:700;font-size:18px;cursor:pointer;}
-  #confirmDeleteBtn{background:var(--expense);color:#fff;border:none;border-radius:14px;padding:16px;font-weight:700;font-size:18px;cursor:pointer;}
-
-  #syncBadge{
-    display:inline-flex;align-items:center;gap:6px;
-    background:rgba(255,255,255,0.15);border-radius:20px;
-    padding:5px 12px;font-size:14px;color:#fff;margin-top:8px;
-  }
-  #syncDot{width:9px;height:9px;border-radius:50%;background:#ccc;flex:none;}
-  #syncDot.ok{background:var(--income);}
-  #syncDot.err{background:var(--expense);}
-
-  .hidden{display:none !important;}
-</style>
-</head>
-<body>
-
-<!-- First-time setup screen: shows the secret link that must be bookmarked on every device -->
-<div id="setupScreen" class="hidden">
-  <div class="icon">👨‍👩‍👧</div>
-  <h1>สร้างสมุดบัญชีครอบครัวแล้ว</h1>
-  <p>บันทึกลิงก์นี้ไว้ (กด "เพิ่มไปหน้าจอหลัก" หรือจดใส่ Line ตัวเอง) แล้วเปิดลิงก์เดียวกันนี้จากทุกเครื่องที่ต้องการให้ข้อมูลตรงกัน</p>
-  <div class="linkBox" id="shareLink"></div>
-  <button class="bigBtn" id="copyLinkBtn">คัดลอกลิงก์</button>
-  <button class="secondaryBtn" id="enterAppBtn">เข้าใช้งาน</button>
-
-  <div class="joinBox">
-    <p class="joinLabel">มีลิงก์ครอบครัวอยู่แล้ว (เช่น เปิดจากไอคอนหน้าจอหลักแล้วข้อมูลไม่ตรงกับเครื่องอื่น)? วางลิงก์ที่นี่แล้วกดเข้าร่วม</p>
-    <input type="text" id="joinLinkInput" placeholder="วางลิงก์ที่นี่">
-    <button class="secondaryBtn" id="joinLinkBtn">เข้าร่วมด้วยลิงก์นี้</button>
-  </div>
-</div>
-
-<!-- Main app -->
-<div id="app" class="hidden">
-  <header>
-    <h1>💰 บัญชีรายรับ-รายจ่าย</h1>
-    <div id="syncBadge"><span id="syncDot"></span><span id="syncText">กำลังเชื่อมต่อ...</span></div>
-  </header>
-
-  <div id="balanceCard">
-    <div class="label">ยอดคงเหลือทั้งหมด</div>
-    <div id="balanceAmount">0 บาท</div>
-    <div class="balanceSplit">
-      <div class="in"><div class="label">รายรับเดือนนี้</div><div class="amt" id="monthIncome">0</div></div>
-      <div class="out"><div class="label">รายจ่ายเดือนนี้</div><div class="amt" id="monthExpense">0</div></div>
-    </div>
-    <div id="netRow">สุทธิเดือนนี้ <span id="netAmount">0 บาท</span></div>
-  </div>
-
-  <div id="monthNav">
-    <button id="prevMonth">‹</button>
-    <div id="monthLabel"></div>
-    <button id="nextMonth">›</button>
-  </div>
-
-  <button id="todayBtn" class="hidden">🔙 กลับไปเดือนนี้</button>
-
-  <button id="summaryToggleBtn" class="summaryToggle">📊 สรุปตามหมวดหมู่ <span id="summaryChevron">▾</span></button>
-  <div id="categorySummary" class="hidden">
-    <div class="summaryCol">
-      <div class="summaryColTitle expense">รายจ่าย</div>
-      <div id="expenseSummaryList"></div>
-    </div>
-    <div class="summaryCol">
-      <div class="summaryColTitle income">รายรับ</div>
-      <div id="incomeSummaryList"></div>
-    </div>
-  </div>
-
-  <div id="addRow">
-    <button id="addIncomeBtn">➕ รายรับ</button>
-    <button id="addExpenseBtn">➖ รายจ่าย</button>
-  </div>
-
-  <div id="txList"></div>
-  <div id="emptyState" class="hidden">ยังไม่มีรายการในเดือนนี้</div>
-
-  <div id="exportRow">
-    <button id="exportBtn">📄 ส่งออกข้อมูลทั้งหมด (CSV)</button>
-    <button id="linkBtn">🔗 ลิงก์ครอบครัว / ย้ายเครื่อง</button>
-  </div>
-</div>
-
-<div id="toast" class="hidden"></div>
-
-<!-- Add/Edit sheet -->
-<div class="overlay hidden" id="overlay">
-  <div class="sheet">
-    <h2 id="sheetTitle">เพิ่มรายการ</h2>
-    <div class="typeToggle">
-      <button data-type="income" id="typeIncomeBtn">รายรับ</button>
-      <button data-type="expense" id="typeExpenseBtn">รายจ่าย</button>
-    </div>
-    <div class="field">
-      <label>จำนวนเงิน (บาท)</label>
-      <input type="number" inputmode="decimal" id="amountInput" placeholder="0" min="0" step="0.01">
-    </div>
-    <div class="field">
-      <label>จำนวน (ชิ้น)</label>
-      <input type="number" inputmode="numeric" id="quantityInput" placeholder="1" min="1" step="1" value="1">
-    </div>
-    <div class="field">
-      <label>หมวดหมู่</label>
-      <div class="catGrid" id="catGrid"></div>
-    </div>
-    <div class="field hidden" id="amwayField">
-      <label>สินค้า Amway</label>
-      <select id="amwaySelect">
-        <option value="">-- เลือกสินค้า --</option>
-      </select>
-      <button type="button" id="amwayManageBtn" class="amwayManageBtn">✏️ เพิ่ม/แก้ไขราคาสินค้า</button>
-      <div id="amwayManageForm" class="amwayManageForm hidden">
-        <input type="text" id="amwayNameInput" placeholder="ชื่อสินค้า เช่น Nutrilite Garlic - 150 Tablets">
-        <input type="number" id="amwayPriceInput" placeholder="ราคา (บาท)" inputmode="decimal" min="0" step="0.01">
-        <div class="amwayManageActions">
-          <button type="button" id="amwaySaveItemBtn">บันทึกราคา</button>
-          <button type="button" id="amwayDeleteItemBtn" class="hidden">ลบสินค้านี้</button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#215C40" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="สมุดเงินครอบครัว" />
+    <title>สมุดเงินครอบครัว · รายรับรายจ่าย</title>
+    <link rel="icon" href="icon-192.png" />
+    <link rel="apple-touch-icon" href="icon-180.png" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main id="setupScreen" class="setup hidden">
+      <div class="brandIcon" aria-hidden="true">🌿</div>
+      <h1 id="setupTitle">สมุดเงินครอบครัว</h1>
+      <p id="setupDescription">
+        เปิดลิงก์เดียวกันบนทุกเครื่อง ข้อมูลจะอยู่ในสมุดเล่มเดียวกัน ไม่ต้องสมัครหรือล็อกอิน
+      </p>
+      <div id="shareSection">
+        <label for="shareLink">ลิงก์ของสมุดเล่มนี้</label
+        ><input id="shareLink" readonly aria-describedby="shareHelp" />
+        <p id="shareHelp" class="small">
+          ทุกคนที่มีลิงก์นี้สามารถดู เพิ่ม แก้ไข และลบรายการได้
+        </p>
+        <button class="primary wide" id="copyLinkBtn">คัดลอกลิงก์</button
+        ><button class="wide" id="enterAppBtn">เปิดสมุดบัญชี</button>
+        <details class="installHelp">
+          <summary>เพิ่มไอคอนไว้บนหน้าจอมือถือ</summary>
+          <p>iPhone: เปิดใน Safari → แชร์ → เพิ่มไปยังหน้าจอโฮม</p>
+          <p>Android: เปิดใน Chrome → เมนู ⋮ → เพิ่มลงในหน้าจอหลัก</p>
+        </details>
+      </div>
+      <div class="joinBox">
+        <label for="joinLinkInput">มีลิงก์ของครอบครัวอยู่แล้ว?</label
+        ><input
+          type="url"
+          id="joinLinkInput"
+          placeholder="วางลิงก์ที่นี่"
+          autocomplete="off"
+        />
+        <p id="joinError" class="error hidden" role="alert"></p>
+        <button id="joinLinkBtn" class="wide">เปิดสมุดจากลิงก์นี้</button>
+      </div>
+    </main>
+    <main id="app" class="hidden">
+      <header class="appHeader">
+        <div>
+          <p class="eyebrow">จดง่าย ดูเงินได้ทุกวัน</p>
+          <h1>สมุดเงินครอบครัว</h1>
+        </div>
+        <span class="brandIcon" aria-hidden="true">🌿</span>
+      </header>
+      <div id="syncBadge" class="syncStatus" role="status" aria-live="polite">
+        <span id="syncText">กำลังโหลดข้อมูล…</span
+        ><button id="retryBtn" class="textButton hidden">ลองเชื่อมต่อใหม่</button>
+      </div>
+      <section id="balanceCard" aria-labelledby="balanceLabel">
+        <h2 id="balanceLabel">เงินคงเหลือปัจจุบัน</h2>
+        <div class="balanceLine">
+          <strong id="balanceAmount">—</strong><span>บาท</span>
+        </div>
+        <p>รวมรายการที่บันทึกไว้ทุกเดือน</p>
+      </section>
+      <section class="monthCard" aria-labelledby="monthLabel">
+        <div id="monthNav">
+          <button id="prevMonth" aria-label="เดือนก่อนหน้า">‹</button>
+          <h2 id="monthLabel"></h2>
+          <button id="nextMonth" aria-label="เดือนถัดไป">›</button>
+        </div>
+        <button id="todayBtn" class="textButton hidden">กลับไปเดือนปัจจุบัน</button>
+        <div class="balanceSplit">
+          <div>
+            <span>เงินเข้า</span
+            ><strong id="monthIncome" class="income">—</strong>
+          </div>
+          <div>
+            <span>เงินออก</span
+            ><strong id="monthExpense" class="expense">—</strong>
+          </div>
+        </div>
+        <p id="netRow">สุทธิของเดือนที่เลือก <strong id="netAmount">—</strong></p>
+        <button
+          id="summaryToggleBtn"
+          class="summaryToggle"
+          aria-expanded="false"
+          aria-controls="categorySummary"
+        >
+          ดูสรุปตามหมวดหมู่ <span id="summaryChevron" aria-hidden="true">⌄</span>
+        </button>
+        <div id="categorySummary" class="hidden">
+          <h3>เงินออก</h3>
+          <div id="expenseSummaryList"></div>
+          <h3>เงินเข้า</h3>
+          <div id="incomeSummaryList"></div>
+        </div>
+      </section>
+      <section class="transactions" aria-labelledby="listTitle">
+        <div class="sectionHeading">
+          <h2 id="listTitle">รายการในเดือนนี้</h2>
+          <span id="txCount" class="small"></span>
+        </div>
+        <div id="loadingState" class="emptyState">กำลังโหลดรายการ…</div>
+        <div id="txList"></div>
+        <div id="emptyState" class="emptyState hidden">
+          ยังไม่มีรายการในเดือนที่เลือก<br /><span class="small"
+            >เริ่มจดด้วยปุ่มเงินเข้าหรือเงินออกด้านล่าง</span
+          >
+        </div>
+      </section>
+      <footer class="appFooter">
+        <button id="linkBtn">ลิงก์ครอบครัว / ย้ายเครื่อง</button
+        ><button id="exportBtn">ดาวน์โหลดข้อมูลทั้งหมด (CSV)</button>
+      </footer>
+      <nav id="addRow" aria-label="บันทึกรายการใหม่">
+        <button id="addIncomeBtn">
+          <span aria-hidden="true">＋</span> บันทึกเงินเข้า</button
+        ><button id="addExpenseBtn" class="primary">
+          <span aria-hidden="true">−</span> บันทึกเงินออก
+        </button>
+      </nav>
+    </main>
+    <div id="toast" class="hidden" role="status" aria-live="polite"></div>
+    <dialog id="editor" aria-labelledby="sheetTitle">
+      <form id="transactionForm" novalidate>
+        <div class="sheetHeader">
+          <h2 id="sheetTitle">บันทึกเงินออก</h2>
+          <button
+            type="button"
+            id="closeEditorBtn"
+            class="textButton"
+            aria-label="ปิดหน้าบันทึก"
+          >
+            ปิด
+          </button>
+        </div>
+        <div class="sheetBody">
+          <fieldset id="editorFields">
+            <div class="typeToggle" role="group" aria-label="ประเภทรายการ">
+              <button type="button" id="typeIncomeBtn" aria-pressed="false">
+                เงินเข้า</button
+              ><button type="button" id="typeExpenseBtn" aria-pressed="true">
+                เงินออก
+              </button>
+            </div>
+            <div class="field">
+              <label for="amountInput">จำนวนเงินรวม (บาท)</label
+              ><input
+                type="text"
+                inputmode="decimal"
+                id="amountInput"
+                autocomplete="off"
+                placeholder="0.00"
+                aria-describedby="amountHint formError"
+              />
+              <p id="amountHint" class="small">ใส่ยอดรวมที่รับหรือจ่ายจริง</p>
+            </div>
+            <fieldset class="categoryField">
+              <legend>หมวดหมู่</legend>
+              <div id="catGrid" class="catGrid"></div>
+              <button
+                type="button"
+                id="moreCategoriesBtn"
+                class="textButton wide"
+                aria-expanded="false"
+                aria-controls="moreCatGrid"
+              >
+                หมวดอื่น ๆ
+              </button>
+              <div id="moreCatGrid" class="catGrid hidden"></div>
+            </fieldset>
+            <div id="amwayField" class="field hidden">
+              <label for="amwaySelect">สินค้า Amway</label
+              ><select id="amwaySelect">
+                <option value="">เลือกสินค้า (ไม่บังคับ)</option>
+              </select>
+              <p id="amwayCalculation" class="small" aria-live="polite"></p>
+              <button type="button" id="amwayManageBtn" class="textButton">
+                จัดการชื่อและราคาสินค้า
+              </button>
+              <div id="amwayManageForm" class="catalogForm hidden">
+                <label for="amwayNameInput">ชื่อสินค้า</label
+                ><input id="amwayNameInput" maxlength="300" /><label
+                  for="amwayPriceInput"
+                  >ราคาต่อชิ้น (บาท)</label
+                ><input type="text" inputmode="decimal" id="amwayPriceInput" />
+                <p id="catalogError" class="error hidden" role="alert"></p>
+                <div class="catalogActions">
+                  <button type="button" id="amwaySaveItemBtn" class="primary">
+                    บันทึกราคา</button
+                  ><button
+                    type="button"
+                    id="amwayDeleteItemBtn"
+                    class="danger hidden"
+                  >
+                    ลบสินค้า
+                  </button>
+                </div>
+              </div>
+            </div>
+            <details id="dateDetails">
+              <summary>
+                <span id="dateSummary">วันนี้</span
+                ><span class="summaryLink">เปลี่ยนวันที่</span>
+              </summary>
+              <div class="field">
+                <label for="dateInput">วันที่ของรายการ</label
+                ><input type="date" id="dateInput" required />
+              </div>
+              <div class="field">
+                <label for="timeInput">เวลา (ไม่บังคับ)</label
+                ><input type="time" id="timeInput" />
+              </div>
+            </details>
+            <details id="extraDetails">
+              <summary>
+                รายละเอียดเพิ่มเติม <span class="small">จำนวน / บันทึกช่วยจำ</span>
+              </summary>
+              <div class="field">
+                <label for="quantityInput">จำนวนชิ้น</label
+                ><input
+                  type="number"
+                  inputmode="numeric"
+                  id="quantityInput"
+                  min="1"
+                  step="1"
+                  value="1"
+                />
+                <p class="small">
+                  นอกเหนือจากสินค้าที่เลือกใน Amway จำนวนชิ้นไม่เปลี่ยนยอดเงินรวม
+                </p>
+              </div>
+              <div class="field">
+                <label for="noteInput">บันทึกช่วยจำ (ไม่บังคับ)</label
+                ><textarea
+                  id="noteInput"
+                  rows="2"
+                  maxlength="2000"
+                  placeholder="เช่น ซื้อของที่ตลาด"
+                ></textarea>
+              </div>
+            </details>
+          </fieldset>
+        </div>
+        <div class="sheetFooter">
+          <p id="formError" class="error hidden" role="alert"></p>
+          <p id="savingHelp" class="small hidden" role="status"></p>
+          <div class="sheetActions">
+            <button type="button" id="cancelBtn">ยกเลิก</button
+            ><button type="submit" id="saveBtn" class="primary">
+              บันทึกเงินออก
+            </button>
+          </div>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="detailDialog" aria-labelledby="detailTitle">
+      <div class="sheetHeader">
+        <h2 id="detailTitle">รายละเอียดรายการ</h2>
+        <button id="closeDetailBtn" class="textButton">ปิด</button>
+      </div>
+      <div class="sheetBody"><div id="detailContent"></div></div>
+      <div class="sheetFooter">
+        <div class="sheetActions">
+          <button id="deleteBtn" class="danger">ลบรายการ</button
+          ><button id="editBtn" class="primary">แก้ไขรายการ</button>
         </div>
       </div>
-    </div>
-
-    <div class="field">
-      <label>โน้ต (ไม่บังคับ)</label>
-      <input type="text" id="noteInput" placeholder="เช่น ตลาดนัด">
-    </div>
-    <div class="field hidden">
-      <label>วันที่</label>
-      <input type="date" id="dateInput">
-    </div>
-    <div class="field hidden">
-      <label>เวลา</label>
-      <input type="time" id="timeInput">
-    </div>
-    <div class="sheetActions">
-      <button id="cancelBtn">ยกเลิก</button>
-      <button id="deleteBtn" class="hidden">ลบ</button>
-      <button id="saveBtn">บันทึก</button>
-    </div>
-  </div>
-</div>
-
-<!-- Delete confirmation -->
-<div class="overlay hidden" id="confirmOverlay">
-  <div class="sheet confirmSheet">
-    <div class="confirmIcon">🗑️</div>
-    <h2>ลบรายการนี้หรือไม่?</h2>
-    <p class="confirmDetail" id="confirmDetail"></p>
-    <div class="sheetActions">
-      <button id="confirmCancelBtn">ยกเลิก</button>
-      <button id="confirmDeleteBtn">ลบรายการ</button>
-    </div>
-  </div>
-</div>
-
-<!-- Firebase (compat SDK) -->
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script>
-// =====================================================================
-// ตั้งค่า Firebase: สร้างโปรเจกต์ฟรีที่ https://console.firebase.google.com
-// -> Build > Firestore Database > สร้างฐานข้อมูล (โหมด production ก็ได้)
-// -> Project settings > General > "Your apps" > Web app > คัดลอกค่าด้านล่างมาแปะ
-// =====================================================================
-const firebaseConfig = {
-  apiKey: "AIzaSyB9CQPK_is8JE_SAswKXqzIJpRFIYg1tOw",
-  authDomain: "family-budget-f47bb.firebaseapp.com",
-  projectId: "family-budget-f47bb",
-  storageBucket: "family-budget-f47bb.firebasestorage.app",
-  messagingSenderId: "1068240277908",
-  appId: "1:1068240277908:web:1c522f96789143f183bf81"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-try { db.enablePersistence({ synchronizeTabs: true }).catch(() => {}); } catch (e) { /* ok if unsupported */ }
-
-const CATEGORIES = {
-  income: [
-    { id: 'salary', em: '💵', label: 'เงินเดือน' },
-    { id: 'palm', em: '🌴', label: 'ค่าขายปาล์ม' },
-    { id: 'interest', em: '📈', label: 'ดอกเบี้ย' },
-    { id: 'other_in', em: '✨', label: 'อื่นๆ' },
-  ],
-  expense: [
-    { id: 'food', em: '🍚', label: 'อาหาร' },
-    { id: 'utility', em: '💡', label: 'ค่าน้ำ-ไฟ' },
-    { id: 'shopping', em: '🛒', label: 'ของใช้' },
-    { id: 'thaisombun', em: '🏪', label: 'ของไทยสมบูรณ์' },
-    { id: 'snack', em: '🍿', label: 'ขนม' },
-    { id: 'home', em: '🏠', label: 'ค่าเช่าบ้าน' },
-    { id: 'shopee', em: '🛍️', label: 'Shopee' },
-    { id: 'amway', em: '🧴', label: 'Amway' },
-    { id: 'gwallet', em: '📱', label: 'เติม G-wallet' },
-    { id: 'beer', em: '🍺', label: 'ค่าขายเบียร์' },
-    { id: 'wifi', em: '📶', label: '3BB wifi' },
-    { id: 'other_out', em: '📦', label: 'อื่นๆ' },
-  ]
-};
-
-function catInfo(type, id) {
-  return (CATEGORIES[type] || []).find(c => c.id === id) || { em: '❓', label: id };
-}
-
-function fmt(n) {
-  return Number(n).toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-}
-
-function currentTimeStr() {
-  const d = new Date();
-  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
-}
-
-// Local-timezone date string. Never use dateInput.valueAsDate = new Date():
-// valueAsDate is UTC-based, so entries added between 00:00 and 07:00 Thai
-// time would silently get yesterday's date (and the date field is hidden).
-function todayStr() {
-  const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-}
-
-let toastTimer = null;
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.remove('hidden');
-  requestAnimationFrame(() => el.classList.add('show'));
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => {
-    el.classList.remove('show');
-    setTimeout(() => el.classList.add('hidden'), 250);
-  }, 1800);
-}
-
-// ---------------- Household (secret link) resolution ----------------
-let justMinted = false;
-
-function getHouseholdId() {
-  const url = new URL(location.href);
-  let h = url.searchParams.get('h');
-  if (h) { localStorage.setItem('familyBudgetHousehold', h); return h; }
-  const stored = localStorage.getItem('familyBudgetHousehold');
-  if (stored) {
-    url.searchParams.set('h', stored);
-    history.replaceState({}, '', url.toString());
-    return stored;
-  }
-  const fresh = (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).slice(2)));
-  localStorage.setItem('familyBudgetHousehold', fresh);
-  url.searchParams.set('h', fresh);
-  history.replaceState({}, '', url.toString());
-  justMinted = true;
-  return fresh;
-}
-
-let householdId = getHouseholdId();
-
-function showSetupScreen(fromApp) {
-  if (fromApp) {
-    document.getElementById('app').classList.add('hidden');
-    document.querySelector('#setupScreen h1').textContent = 'ลิงก์ครอบครัวของคุณ';
-    document.getElementById('copyLinkBtn').textContent = 'คัดลอกลิงก์';
-  }
-  document.getElementById('setupScreen').classList.remove('hidden');
-  const link = location.origin + location.pathname + '?h=' + householdId;
-  document.getElementById('shareLink').textContent = link;
-  document.getElementById('copyLinkBtn').onclick = () => {
-    navigator.clipboard.writeText(link).then(() => {
-      document.getElementById('copyLinkBtn').textContent = 'คัดลอกแล้ว ✓';
-    });
-  };
-  document.getElementById('enterAppBtn').onclick = () => {
-    document.getElementById('setupScreen').classList.add('hidden');
-    startApp();
-  };
-  document.getElementById('joinLinkBtn').onclick = () => {
-    const raw = document.getElementById('joinLinkInput').value.trim();
-    if (!raw) { alert('กรุณาวางลิงก์ครอบครัวก่อน'); return; }
-    let id = raw;
-    try {
-      const parsed = new URL(raw);
-      const hParam = parsed.searchParams.get('h');
-      if (hParam) id = hParam;
-    } catch (e) { /* not a full URL, treat raw text as the id itself */ }
-    const url = new URL(location.href);
-    url.search = '';
-    url.searchParams.set('h', id);
-    location.href = url.toString();
-  };
-}
-
-// ---------------- Auth ----------------
-const syncDot = document.getElementById('syncDot');
-const syncText = document.getElementById('syncText');
-
-firebase.auth().signInAnonymously().catch(err => {
-  syncDot.className = 'err';
-  syncText.textContent = 'เชื่อมต่อไม่สำเร็จ';
-  console.error(err);
-});
-
-firebase.auth().onAuthStateChanged(user => {
-  if (user) {
-    syncDot.className = 'ok';
-    syncText.textContent = 'ซิงค์อยู่';
-    boot();
-  }
-});
-
-let booted = false;
-function boot() {
-  if (booted) return;
-  booted = true;
-  if (justMinted) {
-    showSetupScreen();
-  } else {
-    startApp();
-  }
-}
-</script>
-<script>
-let currentTx = []; // all transactions for household, live
-let viewMonth = new Date(); // month currently displayed
-let editingId = null;
-let editingTx = null;
-let selectedType = 'expense';
-let selectedCat = null;
-
-function txCollection() {
-  return db.collection('households').doc(householdId).collection('transactions');
-}
-
-function amwayItemsCollection() {
-  return db.collection('households').doc(householdId).collection('amwayItems');
-}
-
-let listening = false;
-function startApp() {
-  document.getElementById('app').classList.remove('hidden');
-  localStorage.setItem('familyBudgetHasEnteredApp', '1');
-  document.getElementById('dateInput').value = todayStr();
-  renderMonthLabel();
-  if (!listening) {
-    listening = true;
-    listenTransactions();
-    listenAmwayItems();
-  }
-}
-
-// ---------------- Amway price catalog ----------------
-let amwayItems = [];
-let editingAmwayItemId = null;
-
-function listenAmwayItems() {
-  amwayItemsCollection().orderBy('name').onSnapshot(snap => {
-    amwayItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderAmwaySelect();
-  }, err => console.error(err));
-}
-
-function renderAmwaySelect() {
-  const sel = document.getElementById('amwaySelect');
-  const current = sel.value;
-  sel.innerHTML = '<option value="">-- เลือกสินค้า --</option>' +
-    amwayItems.map(i => `<option value="${i.id}">${escapeHtml(i.name)} — ${fmt(i.price)} บาท</option>`).join('');
-  if (amwayItems.some(i => i.id === current)) sel.value = current;
-}
-
-function listenTransactions() {
-  txCollection().orderBy('date', 'desc').onSnapshot(snap => {
-    currentTx = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderAll();
-  }, err => {
-    syncDot.className = 'err';
-    syncText.textContent = 'เชื่อมต่อไม่สำเร็จ';
-    console.error(err);
-  });
-}
-
-function renderMonthLabel() {
-  const monthsTh = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-  document.getElementById('monthLabel').textContent =
-    monthsTh[viewMonth.getMonth()] + ' ' + (viewMonth.getFullYear() + 543);
-}
-
-function isSameMonth(dateStr, ref) {
-  const d = new Date(dateStr);
-  return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth();
-}
-
-function renderCategorySummaryList(elId, sums, type) {
-  const el = document.getElementById(elId);
-  const entries = Object.entries(sums).sort((a, b) => b[1] - a[1]);
-  if (entries.length === 0) {
-    el.innerHTML = '<div class="summaryEmpty">ไม่มีรายการ</div>';
-    return;
-  }
-  el.innerHTML = entries.map(([catId, amt]) => {
-    const info = catInfo(type, catId);
-    return `<div class="summaryRow"><span class="em">${info.em}</span><span class="label">${info.label}</span><span class="amt">${fmt(amt)}</span></div>`;
-  }).join('');
-}
-
-document.getElementById('summaryToggleBtn').onclick = () => {
-  const panel = document.getElementById('categorySummary');
-  const chevron = document.getElementById('summaryChevron');
-  const willShow = panel.classList.contains('hidden');
-  panel.classList.toggle('hidden', !willShow);
-  chevron.textContent = willShow ? '▴' : '▾';
-};
-
-function renderAll() {
-  // all-time balance
-  let balance = 0, monthIncome = 0, monthExpense = 0;
-  currentTx.forEach(t => {
-    const amt = Number(t.amount) || 0;
-    balance += (t.type === 'income' ? amt : -amt);
-  });
-  const monthTxUnsorted = currentTx.filter(t => isSameMonth(t.date, viewMonth));
-  const catSums = { income: {}, expense: {} };
-  monthTxUnsorted.forEach(t => {
-    const amt = Number(t.amount) || 0;
-    if (t.type === 'income') monthIncome += amt; else monthExpense += amt;
-    catSums[t.type][t.category] = (catSums[t.type][t.category] || 0) + amt;
-  });
-
-  const balEl = document.getElementById('balanceAmount');
-  balEl.textContent = fmt(balance) + ' บาท';
-  balEl.className = balance < 0 ? 'negative' : 'positive';
-  document.getElementById('monthIncome').textContent = fmt(monthIncome);
-  document.getElementById('monthExpense').textContent = fmt(monthExpense);
-
-  const net = monthIncome - monthExpense;
-  const netEl = document.getElementById('netAmount');
-  netEl.textContent = (net < 0 ? '-' : '+') + fmt(Math.abs(net)) + ' บาท';
-  netEl.className = net < 0 ? 'negative' : 'positive';
-
-  renderCategorySummaryList('expenseSummaryList', catSums.expense, 'expense');
-  renderCategorySummaryList('incomeSummaryList', catSums.income, 'income');
-
-  renderMonthLabel();
-
-  const now = new Date();
-  const isCurrentMonth = viewMonth.getFullYear() === now.getFullYear() && viewMonth.getMonth() === now.getMonth();
-  document.getElementById('todayBtn').classList.toggle('hidden', isCurrentMonth);
-
-  // Running balance after each transaction, computed in chronological order
-  // across ALL transactions (not just the viewed month), then looked up per row.
-  const chronological = [...currentTx].sort((a, b) =>
-    (a.date + ' ' + (a.time || '00:00')).localeCompare(b.date + ' ' + (b.time || '00:00'))
-  );
-  const runningBalanceById = {};
-  let running = 0;
-  chronological.forEach(t => {
-    const amt = Number(t.amount) || 0;
-    running += (t.type === 'income' ? amt : -amt);
-    runningBalanceById[t.id] = running;
-  });
-
-  const monthTx = monthTxUnsorted
-    .sort((a,b) => (b.date + ' ' + (b.time || '00:00')).localeCompare(a.date + ' ' + (a.time || '00:00')));
-
-  const listEl = document.getElementById('txList');
-  const emptyEl = document.getElementById('emptyState');
-  listEl.innerHTML = '';
-
-  if (monthTx.length === 0) {
-    emptyEl.classList.remove('hidden');
-    return;
-  }
-  emptyEl.classList.add('hidden');
-
-  let lastDay = null;
-  monthTx.forEach(t => {
-    const day = t.date;
-    if (day !== lastDay) {
-      lastDay = day;
-      const dEl = document.createElement('div');
-      dEl.className = 'dayLabel';
-      const dObj = new Date(day);
-      dEl.textContent = dObj.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
-      listEl.appendChild(dEl);
-    }
-    const info = catInfo(t.type, t.category);
-    const item = document.createElement('div');
-    item.className = 'txItem';
-    item.innerHTML = `
-      <div class="cat">${info.em}</div>
-      <div class="info">
-        <div class="catName">${info.label}${t.quantity && t.quantity > 1 ? ` <span class="qty">x${t.quantity}</span>` : ''}</div>
-        ${t.note ? `<div class="note">${escapeHtml(t.note)}</div>` : ''}
+    </dialog>
+    <dialog
+      id="confirmDialog"
+      aria-labelledby="confirmTitle"
+      aria-describedby="confirmDetail"
+    >
+      <div class="sheetHeader"><h2 id="confirmTitle">ลบรายการนี้หรือไม่?</h2></div>
+      <div class="sheetBody">
+        <p id="confirmDetail"></p>
+        <p class="small">เมื่อลบแล้วจะนำรายการนี้กลับมาไม่ได้</p>
+        <p id="deleteError" class="error hidden" role="alert"></p>
       </div>
-      <div class="side">
-        <div class="amt ${t.type}">${t.type === 'income' ? '+' : '-'}${fmt(t.amount)}</div>
-        ${t.time ? `<div class="time">${escapeHtml(t.time)} น.</div>` : ''}
-        <div class="runBal">คงเหลือ ${fmt(runningBalanceById[t.id])}</div>
+      <div class="sheetFooter">
+        <div class="sheetActions">
+          <button id="confirmCancelBtn" autofocus>เก็บไว้</button
+          ><button id="confirmDeleteBtn" class="dangerFill">ลบรายการ</button>
+        </div>
       </div>
-    `;
-    item.onclick = () => openEdit(t);
-    listEl.appendChild(item);
-  });
-}
-
-function escapeHtml(s) {
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
-}
-
-document.getElementById('prevMonth').onclick = () => {
-  viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1);
-  renderAll();
-};
-document.getElementById('nextMonth').onclick = () => {
-  viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1);
-  renderAll();
-};
-document.getElementById('todayBtn').onclick = () => {
-  viewMonth = new Date();
-  renderAll();
-};
-
-// ---------------- Add / Edit sheet ----------------
-const overlay = document.getElementById('overlay');
-const catGrid = document.getElementById('catGrid');
-
-function getCategoryOrder(type) {
-  const counts = {};
-  currentTx.forEach(t => {
-    if (t.type === type) counts[t.category] = (counts[t.category] || 0) + 1;
-  });
-  const cats = CATEGORIES[type].slice();
-  cats.sort((a, b) => {
-    const aOther = a.id.startsWith('other');
-    const bOther = b.id.startsWith('other');
-    if (aOther !== bOther) return aOther ? 1 : -1;
-    if (aOther && bOther) return 0;
-    return (counts[b.id] || 0) - (counts[a.id] || 0);
-  });
-  return cats;
-}
-
-function renderCatGrid() {
-  catGrid.innerHTML = '';
-  getCategoryOrder(selectedType).forEach(c => {
-    const b = document.createElement('div');
-    b.className = 'catBtn' + (selectedCat === c.id ? ' selected' : '');
-    b.innerHTML = `<span class="em">${c.em}</span><span>${c.label}</span>`;
-    b.onclick = () => { selectedCat = c.id; renderCatGrid(); };
-    catGrid.appendChild(b);
-  });
-  document.getElementById('amwayField').classList.toggle('hidden', selectedCat !== 'amway');
-}
-
-function setType(type) {
-  selectedType = type;
-  selectedCat = null;
-  document.getElementById('typeIncomeBtn').classList.toggle('active', type === 'income');
-  document.getElementById('typeExpenseBtn').classList.toggle('active', type === 'expense');
-  renderCatGrid();
-}
-
-document.getElementById('typeIncomeBtn').onclick = () => setType('income');
-document.getElementById('typeExpenseBtn').onclick = () => setType('expense');
-
-function openAdd(type) {
-  editingId = null;
-  editingTx = null;
-  document.getElementById('sheetTitle').textContent = 'เพิ่มรายการ';
-  document.getElementById('deleteBtn').classList.add('hidden');
-  document.getElementById('amountInput').value = '';
-  document.getElementById('quantityInput').value = '1';
-  document.getElementById('noteInput').value = '';
-  document.getElementById('dateInput').value = todayStr();
-  document.getElementById('timeInput').value = currentTimeStr();
-  document.getElementById('amwaySelect').value = '';
-  document.getElementById('amwayManageForm').classList.add('hidden');
-  setType(type);
-  overlay.classList.remove('hidden');
-}
-
-function openEdit(t) {
-  editingId = t.id;
-  editingTx = t;
-  document.getElementById('sheetTitle').textContent = 'แก้ไขรายการ';
-  document.getElementById('deleteBtn').classList.remove('hidden');
-  document.getElementById('amountInput').value = t.amount;
-  document.getElementById('quantityInput').value = t.quantity || 1;
-  document.getElementById('noteInput').value = t.note || '';
-  document.getElementById('dateInput').value = t.date;
-  document.getElementById('timeInput').value = t.time || '';
-  document.getElementById('amwayManageForm').classList.add('hidden');
-  selectedCat = t.category;
-  setType(t.type);
-  selectedCat = t.category;
-  renderCatGrid();
-  const matchedItem = t.category === 'amway' ? amwayItems.find(i => i.name === t.note) : null;
-  document.getElementById('amwaySelect').value = matchedItem ? matchedItem.id : '';
-  overlay.classList.remove('hidden');
-}
-
-function currentQuantity() {
-  const q = parseInt(document.getElementById('quantityInput').value, 10);
-  return (q && q > 0) ? q : 1;
-}
-
-document.getElementById('amwaySelect').onchange = (e) => {
-  const item = amwayItems.find(i => i.id === e.target.value);
-  if (!item) return;
-  document.getElementById('noteInput').value = item.name;
-  document.getElementById('amountInput').value = item.price * currentQuantity();
-};
-
-document.getElementById('quantityInput').oninput = () => {
-  const item = amwayItems.find(i => i.id === document.getElementById('amwaySelect').value);
-  if (!item) return;
-  document.getElementById('amountInput').value = item.price * currentQuantity();
-};
-
-document.getElementById('amwayManageBtn').onclick = () => {
-  const form = document.getElementById('amwayManageForm');
-  const willShow = form.classList.contains('hidden');
-  form.classList.toggle('hidden', !willShow);
-  if (willShow) {
-    const sel = document.getElementById('amwaySelect');
-    const item = amwayItems.find(i => i.id === sel.value);
-    editingAmwayItemId = item ? item.id : null;
-    document.getElementById('amwayNameInput').value = item ? item.name : '';
-    document.getElementById('amwayPriceInput').value = item ? item.price : '';
-    document.getElementById('amwayDeleteItemBtn').classList.toggle('hidden', !item);
-  }
-};
-
-document.getElementById('amwaySaveItemBtn').onclick = async () => {
-  const name = document.getElementById('amwayNameInput').value.trim();
-  const price = parseFloat(document.getElementById('amwayPriceInput').value);
-  if (!name) { alert('กรุณาใส่ชื่อสินค้า'); return; }
-  if (!price || price <= 0) { alert('กรุณาใส่ราคา'); return; }
-  try {
-    let savedId = editingAmwayItemId;
-    if (savedId) {
-      await amwayItemsCollection().doc(savedId).update({ name, price, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-    } else {
-      const ref = await amwayItemsCollection().add({ name, price, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-      savedId = ref.id;
-    }
-    document.getElementById('amwayManageForm').classList.add('hidden');
-    showToast('บันทึกราคาแล้ว ✓');
-    setTimeout(() => {
-      const sel = document.getElementById('amwaySelect');
-      sel.value = savedId;
-      sel.dispatchEvent(new Event('change'));
-    }, 150);
-  } catch (e) {
-    alert('บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง');
-    console.error(e);
-  }
-};
-
-document.getElementById('amwayDeleteItemBtn').onclick = async () => {
-  if (!editingAmwayItemId) return;
-  if (!confirm('ลบสินค้านี้จากรายการหรือไม่? (จะไม่กระทบรายการที่บันทึกไปแล้วในอดีต)')) return;
-  try {
-    await amwayItemsCollection().doc(editingAmwayItemId).delete();
-    document.getElementById('amwayManageForm').classList.add('hidden');
-    document.getElementById('amwaySelect').value = '';
-    editingAmwayItemId = null;
-    showToast('ลบสินค้าแล้ว');
-  } catch (e) {
-    alert('ลบไม่สำเร็จ ลองใหม่อีกครั้ง');
-    console.error(e);
-  }
-};
-
-document.getElementById('addIncomeBtn').onclick = () => openAdd('income');
-document.getElementById('addExpenseBtn').onclick = () => openAdd('expense');
-document.getElementById('cancelBtn').onclick = () => overlay.classList.add('hidden');
-
-document.getElementById('saveBtn').onclick = async () => {
-  const amount = parseFloat(document.getElementById('amountInput').value);
-  const quantity = currentQuantity();
-  const date = document.getElementById('dateInput').value;
-  const time = document.getElementById('timeInput').value;
-  const note = document.getElementById('noteInput').value.trim();
-
-  if (!amount || amount <= 0) { alert('กรุณาใส่จำนวนเงิน'); return; }
-  if (!selectedCat) { alert('กรุณาเลือกหมวดหมู่'); return; }
-  if (!date) { alert('กรุณาเลือกวันที่'); return; }
-
-  const data = {
-    type: selectedType,
-    category: selectedCat,
-    amount: amount,
-    quantity: quantity,
-    date: date,
-    time: time || null,
-    note: note,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-  };
-
-  try {
-    if (editingId) {
-      await txCollection().doc(editingId).update(data);
-    } else {
-      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-      await txCollection().add(data);
-    }
-    overlay.classList.add('hidden');
-    showToast('บันทึกแล้ว ✓');
-  } catch (e) {
-    alert('บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง');
-    console.error(e);
-  }
-};
-
-const confirmOverlay = document.getElementById('confirmOverlay');
-
-document.getElementById('deleteBtn').onclick = () => {
-  if (!editingId || !editingTx) return;
-  const info = catInfo(editingTx.type, editingTx.category);
-  document.getElementById('confirmDetail').textContent =
-    `${info.em} ${info.label} ${editingTx.type === 'income' ? '+' : '-'}${fmt(editingTx.amount)} บาท`;
-  confirmOverlay.classList.remove('hidden');
-};
-
-document.getElementById('confirmCancelBtn').onclick = () => confirmOverlay.classList.add('hidden');
-
-document.getElementById('confirmDeleteBtn').onclick = async () => {
-  if (!editingId) return;
-  try {
-    await txCollection().doc(editingId).delete();
-    confirmOverlay.classList.add('hidden');
-    overlay.classList.add('hidden');
-    showToast('ลบรายการแล้ว');
-  } catch (e) {
-    alert('ลบไม่สำเร็จ ลองใหม่อีกครั้ง');
-    console.error(e);
-  }
-};
-
-// ---------------- Household link management ----------------
-document.getElementById('linkBtn').onclick = () => showSetupScreen(true);
-
-// ---------------- CSV export ----------------
-document.getElementById('exportBtn').onclick = () => {
-  if (currentTx.length === 0) { alert('ยังไม่มีข้อมูลให้ส่งออก'); return; }
-  const rows = [['วันที่', 'เวลา', 'ประเภท', 'หมวดหมู่', 'จำนวนเงิน', 'จำนวนชิ้น', 'โน้ต']];
-  [...currentTx].sort((a, b) =>
-    (a.date + ' ' + (a.time || '00:00')).localeCompare(b.date + ' ' + (b.time || '00:00'))
-  ).forEach(t => {
-    const info = catInfo(t.type, t.category);
-    rows.push([
-      t.date,
-      t.time || '',
-      t.type === 'income' ? 'รายรับ' : 'รายจ่าย',
-      info.label,
-      t.amount,
-      t.quantity || 1,
-      t.note || ''
-    ]);
-  });
-  const csv = '﻿' + rows.map(r =>
-    r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
-  ).join('\r\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `รายรับรายจ่าย-${new Date().toISOString().slice(0, 10)}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-};
-</script>
-</body>
+    </dialog>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="app.js"></script>
+  </body>
 </html>
