@@ -44,7 +44,7 @@ http
         .readFileSync(path.join(root, file), "utf8")
         .replace(/<script src="https:\/\/www.gstatic.com[^>]+><\/script>/g, "")
         .replace(
-          '<script src="app.js">',
+          /<script src="app\.js(?:\?[^"]*)?">/,
           '<script src="preview-fixture.js"></script><script src="app.js">',
         );
       if (
